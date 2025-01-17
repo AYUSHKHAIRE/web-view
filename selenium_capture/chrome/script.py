@@ -20,6 +20,15 @@ default_url = "https://google.com"
 
 driver.get(default_url)
 
+from multiprocessing import shared_memory
+
+shm = shared_memory.SharedMemory(name="shared_mem")
+
+data = bytes(shm.buf[:]).rstrip(b'\x00')  
+print(f"Data read from shared memory: {data.decode('utf-8')}")
+
+shm.close()
+
 print(default_url)
 time.sleep(15)
 driver.quit()
