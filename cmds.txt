@@ -1,2 +1,8 @@
 docker build -t selenium_capture .
 docker run selenium_capture
+docker logs docker_con_11111111   
+docker inspect docker_con_11111111  
+docker rm -f docker_con_11111111  
+docker build --no-cache -t selenium_capture . 
+docker logs docker_con_11111111  
+docker ps -a
