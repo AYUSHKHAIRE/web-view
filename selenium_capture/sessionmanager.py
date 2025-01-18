@@ -1,14 +1,57 @@
 import subprocess
+import os 
+import shutil
+import json
+
+BASE_DIR = '/home/ayushkhaire/code/accessweb/selenium_capture'
+DOCKER_IMAGE = "selenium_capture"
 
 # control all sessions
 class sessionManager():
     def __init__(self):
         self.shared_memory_pool = {} 
         
-    def setup_docker(self,user_id):
-        result = subprocess.run("pwd", shell=True, capture_output=True, text=True)
-        output = result.stdout.strip()
-        print("Current Directory:", output)
+    def setup_docker(self, user_id):
+        path = os.path.join(BASE_DIR, "docker_containers", f'docker_{user_id}')
+        os.makedirs(path, exist_ok=True)
+        container_name = f'docker_con_{user_id}'
+        # subprocess.run(["docker", "rm", "-f", container_name], check=False, text=True)
+        try:
+            result_check = subprocess.run([
+                "docker", "container", "inspect", container_name
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            if result_check.returncode == 0:  # Container exists
+                print(f"Container '{container_name}' already exists.")
+                try:
+                    output_start = subprocess.run(["docker", "start", container_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE , check=True, text=True)
+                    print(output_start.stdout.strip())
+                except subprocess.CalledProcessError as e:
+                    print(f"Failed to start Docker container '{container_name}'.")
+                    print(f"Error output: {e.stderr}")
+
+            else:  # Container does not exist, create it
+                print(f"Starting a new container for user {user_id}...")
+                result = subprocess.run([
+                    "docker", "run", "-d",
+                    "--name", container_name,
+                    "-v", f"{path}:/session",
+                    DOCKER_IMAGE
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+                output = result.stdout.strip()
+                dictionary = {
+                    "user": user_id,
+                    "container_id" : output
+                }
+                with open(f"{path}/config.json", "w") as outfile:
+                    json.dump(dictionary, outfile)
+                    print(f"Container started successfully: {output}")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to check or start Docker container '{container_name}'.")
+            print(f"Command: {e.cmd}")
+            print(f"Return code: {e.returncode}")
+            print(f"Error output: {e.stderr}")
 
     def terminate(self,user_id,all = None):
         if all:
