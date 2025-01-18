@@ -32,12 +32,16 @@ class sessionManager():
 
             else:  # Container does not exist, create it
                 print(f"Starting a new container for user {user_id}...")
-                result = subprocess.run([
+                result = subprocess.run( [
                     "docker", "run", "-d",
                     "--name", container_name,
+                    "--network", "host",
                     "-v", f"{path}:/session",
                     DOCKER_IMAGE
-                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+                ], stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE, 
+                    text=True, check=True
+                )
                 output = result.stdout.strip()
                 dictionary = {
                     "user": user_id,
