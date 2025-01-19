@@ -6,6 +6,8 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 COPY script.py /app/script.py
+COPY logger_config.py /app/logger_config.py
+COPY client.py /app/client.py
 
 RUN apt-get update && \
     apt-get install -y wget unzip && \
