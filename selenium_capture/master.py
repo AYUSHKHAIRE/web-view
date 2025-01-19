@@ -3,9 +3,10 @@ from memory_manager import memoryManager
 from sessionmanager import sessionManager
 from internal_server_manager import WebSocketServer
 import time
+from logger_config import logger
 
 # Initialize managers
-print("Initializing managers...")
+logger.debug("[ MASTER ] Initializing managers...")
 BM = browserManager()
 MM = memoryManager()
 SSM = sessionManager()
@@ -26,6 +27,6 @@ MM.setup_memory(user_id=user_id)
 time.sleep(0.1)
 MM.test_memory(user_id=user_id)
 
-print("Starting the driver...")
+logger.debug("[ MASTER ] Starting the driver...")
 time.sleep(0.1)
 BM.start_driver(user_id=user_id)
