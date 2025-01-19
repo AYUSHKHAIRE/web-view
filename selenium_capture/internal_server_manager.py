@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import json
 import threading
+from logger_config import logger
 
 class WebSocketServer:
     def __init__(self, host='localhost', port=9000):
@@ -12,45 +13,53 @@ class WebSocketServer:
 
     async def register(self, websocket):
         self.clients.add(websocket)
-        print(f"Client connected: {websocket.remote_address}")
+        logger.debug(f"[ SERVER ] Client connected: {websocket.remote_address}")
 
     async def unregister(self, websocket):
         self.clients.remove(websocket)
-        print(f"Client disconnected: {websocket.remote_address}")
+        logger.warning(f"[ SERVER ] Client disconnected: {websocket.remote_address}")
 
     async def handle_client(self, websocket):
         await self.register(websocket)
         try:
             async for message in websocket:
-                print(f"Received: {message}")
                 message = json.loads(message)
                 if message["special"] == "register":
+                    logger.info(f"[ SERVER ] Received message for registration")
                     user_id = message["user_id"]
                     self.active_sockets[user_id] = websocket
-                    await self.send_message(user_id=user_id,message=f"server received : {message}")
-                if message["special"] == None:
+                    await self.send_message(user_id=user_id,message=f"server received registration ")
+                    await self.send_message(user_id=user_id,message=f"Hello client ! ",type="hello")
+                if message["special"] == "hello":
+                    logger.info(f"[ SERVER ] Received hello message")
                     user_id = message["user_id"]
-                    await self.send_message(user_id=user_id,message=f"server received : {message}")
+                    await self.send_message(user_id=user_id,message=f"hello client", type = "hello")
                 
         except websockets.exceptions.ConnectionClosed as e:
-            print(f"Connection closed: {e}")
+            logger.error(f"[ SERVER ] Connection closed: {e}\n")
         finally:
             await self.unregister(websocket)
 
-    async def send_message(self, user_id, message):
+    async def send_message(self, user_id, message,type = None):
         websocket = self.active_sockets.get(user_id)
         if websocket:
             try:
-                print(f"server is sending to the client {message}.")
+                logger.debug(f"[ SERVER ] server is sending to the client.")
+                message = {
+                    'user_id':user_id,
+                    'message':message,
+                    'type':type
+                }
+                message = json.dumps(message)
                 await websocket.send(message)
             except websockets.exceptions.ConnectionClosedError:
-                print(f"Connection closed for user_id {user_id}.")
+                logger.critical(f"[ SERVER ] Connection closed for user_id {user_id}.")
         else:
-            print(f"No active WebSocket connection found for user_id {user_id}.")
+            logger.warning(f"[ SERVER ] No active WebSocket connection found for user_id {user_id}.")
 
     def start(self):
         async def main():
-            print(f"Server starting on {self.host}:{self.port}")
+            logger.warning(f"[ SERVER ] Server starting on {self.host}:{self.port}")
             async with websockets.serve(self.handle_client, self.host, self.port):
                 await asyncio.Future()  # Run forever
 
@@ -62,4 +71,4 @@ class WebSocketServer:
     def start_in_thread(self):
         thread = threading.Thread(target=self.start)
         thread.start()
-        print("Server started in a new thread.")
+        logger.warning("[ SERVER ] Server started in a new thread.")
