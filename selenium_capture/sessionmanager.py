@@ -2,6 +2,7 @@ import subprocess
 import os 
 import shutil
 import json
+from logger_config import logger
 
 BASE_DIR = '/home/ayushkhaire/code/accessweb/selenium_capture'
 DOCKER_IMAGE = "selenium_capture"
@@ -22,16 +23,16 @@ class sessionManager():
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
             if result_check.returncode == 0:  # Container exists
-                print(f"Container '{container_name}' already exists.")
+                logger.warning(f"[ SESSION ] Container '{container_name}' already exists.")
                 try:
                     output_start = subprocess.run(["docker", "start", container_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE , check=True, text=True)
-                    print(output_start.stdout.strip())
+                    logger.warning(f"[ SESSION ] {output_start.stdout.strip()}",)
                 except subprocess.CalledProcessError as e:
-                    print(f"Failed to start Docker container '{container_name}'.")
-                    print(f"Error output: {e.stderr}")
+                    logger.error(f"[ SESSION ] Failed to start Docker container '{container_name}'.")
+                    logger.error(f"[ SESSION ] Error output: {e.stderr}")
 
             else:  # Container does not exist, create it
-                print(f"Starting a new container for user {user_id}...")
+                logger.debug(f"[ SESSION ] Starting a new container for user {user_id}...")
                 result = subprocess.run( [
                     "docker", "run", "-d",
                     "--name", container_name,
@@ -49,13 +50,13 @@ class sessionManager():
                 }
                 with open(f"{path}/config.json", "w") as outfile:
                     json.dump(dictionary, outfile)
-                    print(f"Container started successfully: {output}")
+                    logger.debug(f"[ SESSION ] Container started successfully: {output}")
 
         except subprocess.CalledProcessError as e:
-            print(f"Failed to check or start Docker container '{container_name}'.")
-            print(f"Command: {e.cmd}")
-            print(f"Return code: {e.returncode}")
-            print(f"Error output: {e.stderr}")
+            logger.error(f"[ SESSION ] Failed to check or start Docker container '{container_name}'.")
+            logger.error(f"[ SESSION ] Command: {e.cmd}")
+            logger.error(f"[ SESSION ] Return code: {e.returncode}")
+            logger.error(f"[ SESSION ] Error output: {e.stderr}")
 
     def terminate(self,user_id,all = None):
         if all:
