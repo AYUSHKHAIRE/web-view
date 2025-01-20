@@ -37,6 +37,7 @@ class sessionManager():
                     "docker", "run", "-d",
                     "--name", container_name,
                     "--network", "host",
+                    "--ipc=host",
                     "-v", f"{path}:/session",
                     DOCKER_IMAGE
                 ], stdout=subprocess.PIPE, 
