@@ -24,9 +24,11 @@ SSM.setup_docker(user_id=user_id)
 time.sleep(0.1)
 MM.setup_memory(user_id=user_id)
 
-time.sleep(0.1)
-MM.test_memory(user_id=user_id)
-
 logger.debug("[ MASTER ] Starting the driver...")
 time.sleep(0.1)
 BM.start_driver(user_id=user_id)
+
+time.sleep(0.1)
+data = MM.read_memory(user_id=user_id)
+logger.debug(f"[ MASTER ] server is reading shared memory : {data}")
+
