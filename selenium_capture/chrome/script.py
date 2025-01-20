@@ -6,12 +6,13 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from logger_config import logger
 from client import WebSocketClient
+from multiprocessing import shared_memory
 
 # Global Settings
 user_id = 11111111
 default_url = "https://google.com"
 websocket_uri = "ws://localhost:9000"
-
+shared_memory_block = None
 
 def setup_selenium_driver():
     """Setup and return a Selenium WebDriver instance."""
@@ -34,18 +35,30 @@ def capture_screenshot(driver, url, screenshot_path="screenshot.png"):
     driver.quit()
 
 
+def write_to_shared_memory(data):
+    shm = shared_memory.SharedMemory(name=f'shared_memory_{user_id}', create=False, size=1000)
+    data_bytes = data.encode('utf-8')  
+    if len(data_bytes) > shm.size:
+        raise ValueError("Data size exceeds shared memory size")
+    shm.buf[:len(data_bytes)] = data_bytes
+    shm.buf[len(data_bytes)] = 0
+    shm.close()
+    
 def main():
     """Main function to run the client and Selenium driver."""
     logger.debug("[ CLIENT ] Starting WebSocket client...")
     ws_client = WebSocketClient(uri=websocket_uri, user_id=user_id)
     ws_client.start_in_thread()
 
+    logger.debug("[ CLIENT ] Sending test message to WebSocket server...")
+    ws_client.send_message_threadsafe(type="hello", message="Hello, server!")
+    
+    logger.debug("[ CLIENT ] writing the the shared memory ...")
+    write_to_shared_memory("client writing to memory .")
+
     logger.debug("[ CLIENT ] Setting up Selenium WebDriver...")
     driver = setup_selenium_driver()
     capture_screenshot(driver, url=default_url)
-
-    logger.debug("[ CLIENT ] Sending test message to WebSocket server...")
-    ws_client.send_message_threadsafe(type="hello", message="Hello, server!")
 
     # Keep the main thread alive
     try:
@@ -54,7 +67,6 @@ def main():
     except KeyboardInterrupt:
         logger.info("[ CLIENT ] Shutting down...")
         asyncio.run(ws_client.close())
-
 
 if __name__ == "__main__":
     main()
