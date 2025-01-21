@@ -4,3 +4,7 @@ class browserManager:
     
     def start_driver(self,user_id):
         pass
+    
+    def stream_screenshot(self,user_id):
+        pass
+    
