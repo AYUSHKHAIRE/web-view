@@ -12,7 +12,7 @@ MM = memoryManager()
 SSM = sessionManager()
 WSS = WebSocketServer(port=9000)
 
-user_id = '11111111'
+user_id = 1111
 
 # Setup and start WebSocket server
 WSS.start_in_thread()
@@ -24,11 +24,8 @@ SSM.setup_docker(user_id=user_id)
 time.sleep(0.1)
 MM.setup_memory(user_id=user_id)
 
-logger.debug("[ MASTER ] Starting the driver...")
-time.sleep(0.1)
-BM.start_driver(user_id=user_id)
-
 time.sleep(0.1)
 data = MM.read_memory(user_id=user_id)
 logger.debug(f"[ MASTER ] server is reading shared memory : {data}")
+
 
