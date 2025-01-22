@@ -7,13 +7,19 @@ from webdriver_manager.chrome import ChromeDriverManager
 from logger_config import logger
 from client import WebSocketClient
 from multiprocessing import shared_memory
-import threading
-import base64
+import os
 
-# Global Settings
-user_id = 1111
+user_id = os.environ.get('CONTAINER_USER_ID')
+
+if user_id:
+    logger.debug(f"Extracted user_id: {user_id}")
+else:
+    raise ValueError("CONTAINER_NAME environment variable is not set")
+
+logger.debug(f'starting docker for {user_id}')
+
 default_url = "https://x.com"
-websocket_uri = "ws://localhost:9000"
+websocket_uri = "ws://localhost:9876"
 shared_memory_block = None
 driver = None
 

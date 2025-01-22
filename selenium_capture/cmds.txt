@@ -1,2 +1,0 @@
-docker build -t selenium_capture .
-docker run selenium_capture
