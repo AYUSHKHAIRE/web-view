@@ -4,3 +4,4 @@
 /selenium_capture/docker_containers
 /accessweb/browse/docker_containers
 /djenv
+/accessweb/db.sqlite3
