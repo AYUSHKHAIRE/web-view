@@ -1,8 +1,12 @@
-{% extends "base.html" %}
-{% load static %}
-{% block content %}
-  <h1>Hi</h1>
-  <button id="start_session"  style="margin: 200px;" >Start session</button>
-  <div id="user_id" style="display: none;" >{{ user_id }}</div>
-  <script src="{% static 'js/browse.js' %}"></script>
+{% extends "base.html" %} {% load static %} {% block content %}
+<div id="user_id" style="display: none">{{ user_id }}</div>
+<div class="mainmain">
+  <div class="maincontainer">
+    <div class="container">
+      <h1>Break the Barriers , {{request.user.username}} ! </h1>
+      <button id="startSessionButton">Start Session</button>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/browse.js' %}"></script>
 {% endblock content %}
