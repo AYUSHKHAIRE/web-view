@@ -1,0 +1,5 @@
+asgiref==3.8.1
+colorlog==6.9.0
+Django==5.1.5
+sqlparse==0.5.3
+websockets==14.1
