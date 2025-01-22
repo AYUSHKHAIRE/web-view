@@ -1,0 +1,8 @@
+{% extends "base.html" %} {% block content %}
+  <div class="main">
+    Good day,
+    <div id="cliusername">
+      {% if user.is_authenticated %} {{request.user.username}} {% endif %}
+    </div>
+  </div>
+{% endblock content %}

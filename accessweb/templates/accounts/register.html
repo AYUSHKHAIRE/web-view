@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="maincontainer">
+  <form class="container" method="post" action="{% url 'register' %}">
+    <h1>Register</h1>
+    <!-- <img class="logo" src="{% static 'images/logo.jpeg' %}" alt="" srcset="" /> -->
+    {% csrf_token %}
+    <input
+      class="form-input"
+      type="text"
+      name="username"
+      id="username"
+      placeholder="Username"
+    />
+    <input
+      class="form-input"
+      type="email"
+      name="email"
+      id="email"
+      placeholder="Email"
+    />
+    <input
+      class="form-input"
+      type="password"
+      name="password"
+      id="password"
+      placeholder="Password"
+    />
+    <input
+      class="form-input"
+      type="password"
+      name="confirm_password"
+      id="confirm_password"
+      placeholder="Confirm Password"
+    />
+    <button class="form-button" type="submit">Submit</button>
+  </form>
+
+  {% endblock content %}
+</div>

@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Break the barriers !</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <!-- Linking Google Fonts for Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  </head>
+  <body>
+    <!-- Mobile Sidebar Menu Button -->
+    <button class="sidebar-menu-button">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+    <aside class="sidebar">
+      <!-- Sidebar Header -->
+      <header class="sidebar-header">
+        <a href="#" class="header-logo">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSo-kdzgQeeDXfbqWzhIFPId-hDJHRLpvel4Q&s" alt="CodingNepal" />
+        </a>
+        <button class="sidebar-toggler">
+          <span class="material-symbols-rounded">chevron_left</span>
+        </button>
+      </header>
+      <nav class="sidebar-nav">
+        <!-- Primary Top Nav -->
+        <ul class="nav-list primary-nav">
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">dashboard</span>
+              <span class="nav-label">Dashboard</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Dashboard</a></li>
+            </ul>
+          </li>
+          <!-- Dropdown -->
+          <li class="nav-item dropdown-container">
+            <a href="{% url 'browse' %}" class="nav-link dropdown-toggle">
+              <span class="material-symbols-rounded">calendar_today</span>
+              <span class="nav-label">Browse</span>
+              <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+            </a>
+            <!-- Dropdown Menu -->
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Browse</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">notifications</span>
+              <span class="nav-label">Notifications</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Notifications</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">local_library</span>
+              <span class="nav-label">Resources</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Resources</a></li>
+            </ul>
+          </li>
+          <!-- Dropdown -->
+          <li class="nav-item dropdown-container">
+            <a href="#" class="nav-link dropdown-toggle">
+              <span class="material-symbols-rounded">star</span>
+              <span class="nav-label">Bookmarks</span>
+              <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+            </a>
+            <!-- Dropdown Menu -->
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Bookmarks</a></li>
+              <li class="nav-item"><a href="#" class="nav-link dropdown-link">Saved Tutorials</a></li>
+              <li class="nav-item"><a href="#" class="nav-link dropdown-link">Favorite Blogs</a></li>
+              <li class="nav-item"><a href="#" class="nav-link dropdown-link">Resource Guides</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">extension</span>
+              <span class="nav-label">Extensions</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Extensions</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">settings</span>
+              <span class="nav-label">Settings</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Settings</a></li>
+            </ul>
+          </li>
+        </ul>
+        <!-- Secondary Bottom Nav -->
+        <ul class="nav-list secondary-nav">
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">help</span>
+              <span class="nav-label">Support</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Support</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="material-symbols-rounded">logout</span>
+              <span class="nav-label">Sign Out</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="nav-item"><a class="nav-link dropdown-title">Sign Out</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+    <section>
+      {% block content %}{% endblock content %}
+    </section>
+
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>
