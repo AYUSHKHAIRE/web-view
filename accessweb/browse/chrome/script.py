@@ -10,16 +10,12 @@ from multiprocessing import shared_memory
 import os
 
 user_id = os.environ.get('CONTAINER_USER_ID')
-
-if user_id:
-    logger.debug(f"Extracted user_id: {user_id}")
-else:
-    raise ValueError("CONTAINER_NAME environment variable is not set")
+auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
 
 logger.debug(f'starting docker for {user_id}')
 
 default_url = "https://x.com"
-websocket_uri = "ws://localhost:9876"
+websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 shared_memory_block = None
 driver = None
 
@@ -59,11 +55,11 @@ def capture_and_write_screenshot(driver):
 def main():
     """Main function to run the client and Selenium driver."""
     logger.debug("[ CLIENT ] Starting WebSocket client...")
-    ws_client = WebSocketClient(uri=websocket_uri, user_id=user_id)
+    ws_client = WebSocketClient(uri=websocket_uri, user_id=user_id,auth_token = auth_token)
     ws_client.start_in_thread()
 
     logger.debug("[ CLIENT ] Sending test message to WebSocket server...")
-    ws_client.send_message_threadsafe(type="hello", message="Hello, server!")
+    # ws_client.send_message_threadsafe(type="hello", message="Hello, server!")
     
     logger.debug("[ CLIENT ] writing the the shared memory ...")
     write_to_shared_memory("client writing to memory .")
