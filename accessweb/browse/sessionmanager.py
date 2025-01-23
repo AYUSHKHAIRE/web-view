@@ -16,6 +16,10 @@ class sessionManager():
         os.makedirs(path, exist_ok=True)
         container_name = f'docker_con_{user_id}'
         # subprocess.run(["docker", "rm", "-f", container_name], check=False, text=True)
+        cookie_file_path = os.path.join(path, 'cookie.json')
+        with open(cookie_file_path, 'r') as cookie_file:
+            auth_token = json.load(cookie_file)
+        auth_token = auth_token.get('cookie')
         try:
             result_check = subprocess.run([
                 "docker", "container", "inspect", container_name
@@ -39,6 +43,7 @@ class sessionManager():
                     "--ipc=host",
                     "-v", f"{path}:/session",
                     "-e", f"CONTAINER_USER_ID={user_id}" ,
+                    "-e", f"CONTAINER_USER_AUTH_TOKEN={auth_token}" ,
                     DOCKER_IMAGE
                 ], stdout=subprocess.PIPE, 
                     stderr=subprocess.PIPE, 
