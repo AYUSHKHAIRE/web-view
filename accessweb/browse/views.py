@@ -9,7 +9,9 @@ import time
 from browse.logger_config import logger
 from .internal_server_manager import WebSocketServer
 from django.http import JsonResponse
-
+from accessweb.settings import BASE_DIR
+import json
+import os 
 # Proceed with other setups
 
 logger.debug("[ MASTER ] Initializing managers...")
@@ -19,13 +21,36 @@ MM = memoryManager()
 WSS = WebSocketServer(port=9876)
 SSM = sessionManager()
 
-WSS.start_in_thread()
+# WSS.start_in_thread()
 
 
 @login_required
 def index(request):
     user_id = UserProfile.objects.get(user = request.user.id).uuid
     return render(request,"browse/main.html", {'user_id': user_id})
+
+@login_required
+def getCookie(request):
+    user_profile = UserProfile.objects.get(user=request.user.id)
+    user_id = str(user_profile.uuid)  
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            cookie = data.get('cookie')
+            if not cookie:
+                return JsonResponse({'status': "Error", 'message': "Cookie is required."}, safe=False)
+            file_data = {
+                'user_id': user_id, 
+                'cookie': cookie
+            }
+            directory_path = f'{BASE_DIR}/browse/docker_containers/docker_{user_id}/'
+            os.makedirs(directory_path, exist_ok=True)
+            with open(f'{directory_path}/cookie.json', "w") as f:
+                json.dump(file_data, f)
+            return JsonResponse({'status': "OK"}, safe=False)
+        except Exception as e:
+            return JsonResponse({'status': "Error", 'message': str(e)}, safe=False)
+    return JsonResponse({'status': "Error", 'message': "Invalid request method."}, safe=False)
 
 @login_required
 def start_session(request,user_id):
