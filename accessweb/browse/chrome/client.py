@@ -5,9 +5,10 @@ import websockets
 import asyncio
 
 class WebSocketClient:
-    def __init__(self, uri, user_id):
+    def __init__(self, uri, user_id, auth_token):
         self.uri = uri
         self.user_id = user_id
+        self.auth_token = auth_token  
         self.websocket = None
         self.loop = asyncio.new_event_loop()
 
@@ -22,13 +23,18 @@ class WebSocketClient:
         self.loop.run_until_complete(self.connect())
 
     async def connect(self):
-        """Establish WebSocket connection and handle communication."""
+        """Establish WebSocket connection with authentication."""
         try:
-            self.websocket = await websockets.connect(self.uri)
-            logger.info(f"[ CLIENT ] Connected to server at {self.uri}")
+            headers = {
+                'Origin':"http://127.0.0.1:8000",
+                "Authorization": f"Bearer {self.auth_token}"
+            }
+            logger.debug(f"trying to connect to {self.uri}")
+            self.websocket = await websockets.connect(self.uri, additional_headers=headers)
+            logger.info(f"[ CLIENT ] Connected to server at {self.uri} with authentication.")
 
             # Send registration message
-            await self.send_message(type="register", message=None)
+            await self.send_message(type="register", message="registerr request")
             logger.info(f"[ CLIENT ] Sent registration message for user_id: {self.user_id}")
 
             # Start listening for server messages
@@ -85,4 +91,3 @@ class WebSocketClient:
             )
         else:
             logger.warning("[ CLIENT ] WebSocket event loop is not running.")
-
