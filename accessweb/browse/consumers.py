@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from browse.memory_manager import memoryManager
 from browse.views import MM
 import asyncio
+import time
 
 class WebSocketConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -105,13 +106,37 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
     async def read_and_stream_screen(self):
         while self.streaming:
             try:
+                start_time = time.perf_counter()
+                
+                # Read from shared memory
                 memory_data = MM.read_memory(user_id=self.room_name)
+                read_time = time.perf_counter()
+                
                 if memory_data:
-                    await self.send(bytes_data=memory_data)
-                    logger.debug(f"Sent image bytes to user {self.room_name},{len(memory_data)}")
+                    data_to_send = {
+                        'user_id': self.room_name,
+                        'message': memory_data,
+                        'type': "i"
+                    }
+                    
+                    # Send data over WebSocket
+                    await self.send(json.dumps(data_to_send))
+                    send_time = time.perf_counter()
+                    
+                    logger.debug(
+                        f"Sent image string to user {self.room_name}, "
+                    )
                 else:
                     logger.warning(f"No image data found for user {self.room_name}")
-                await asyncio.sleep(0.01)
+                
+                # Sleep
+                sleep_start = time.perf_counter()
+                await asyncio.sleep(0.1)
+                sleep_time = time.perf_counter()
+                
+                logger.debug(
+                    f"Sleep time: {sleep_time - sleep_start:.4f}s. Total loop time: {sleep_time - start_time:.4f}s"
+                )
 
             except Exception as e:
                 logger.error(f"Error in read_and_stream_screen: {e}")
