@@ -47,9 +47,10 @@ async function fetchCookie() {
 }
 
 function displayimage(imagestr) {
-  imagecotainer = document.querySelector("#browser_screenshot");
-  imagecotainer.src = `data:image/png;base64, ${imagestr}`;
+  const imageContainer = document.querySelector("#browser_screenshot");
+  imageContainer.src = `data:image/png;base64, ${imagestr}`;
 }
+
 
 function estabilish_socket(user_id) {
   button.textContent = "connecting socket .";
@@ -78,40 +79,46 @@ function estabilish_socket(user_id) {
     }, 1000);
     button.textContent = "connected socket .";
   };
+sessionSocket.onmessage = async (event) => {
+  try {
+    const startTime = performance.now(); // Start timing
 
-  sessionSocket.onmessage = async (event) => {
-    try {
-      if (typeof event.data === "string") {
-        // Handle JSON messages
-        const data = JSON.parse(event.data); // Parse the JSON string into an object
-        console.log("Received JSON message:", data);
+    if (typeof event.data === "string") {
+      const data = JSON.parse(event.data); // Parse the JSON string into an object
 
-        if (data.type === "i" && data.message) {
-          displayimage(data.message); // Call your displayimage function with the Base64 image data
-        } else {
-          console.warn("Unknown message type or missing data:", data);
-        }
-      } else if (event.data instanceof Blob) {
-        // Handle binary messages (Blob)
-        console.log("Received binary message (Blob).");
+      const parseEndTime = performance.now(); // Time after parsing JSON
+      console.log(
+        `[ WEBSOCKET ] Time taken to parse JSON: ${(
+          parseEndTime - startTime
+        ).toFixed(4)} ms`
+      );
 
-        const arrayBuffer = await event.data.arrayBuffer(); // Convert Blob to ArrayBuffer
-        const binaryData = new Uint8Array(arrayBuffer); // Convert ArrayBuffer to Uint8Array
-        const base64String = btoa(
-          binaryData.reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
+      if (data.type === "i" && data.message) {
+        const displayStartTime = performance.now(); // Start timing display
+        displayimage(data.message); // Call your displayimage function with the Base64 image data
+        const displayEndTime = performance.now(); // End timing display
+        console.log(
+          `[ DISPLAY IMAGE ] Time taken to display image: ${(
+            displayEndTime - displayStartTime
+          ).toFixed(4)} ms`
         );
-        displayimage(base64String); // Display the image
-        console.log("displayed", base64String);
       } else {
-        console.warn("Unknown WebSocket message type:", typeof event.data);
+        console.warn("Unknown message type or missing data:", data);
       }
-    } catch (err) {
-      console.error("Failed to handle WebSocket message:", err);
+    } else {
+      console.warn("Unknown WebSocket message type:", typeof event.data);
     }
-  };
+
+    const endTime = performance.now(); // End timing for the entire onmessage handler
+    console.log(
+      `[ WEBSOCKET ] Total time to process message: ${(
+        endTime - startTime
+      ).toFixed(4)} ms`
+    );
+  } catch (err) {
+    console.error("Failed to handle WebSocket message:", err);
+  }
+};
 
   sessionSocket.onerror = (error) => {
     console.error("WebSocket encountered an error:", error);
