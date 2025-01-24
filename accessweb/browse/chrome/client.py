@@ -52,7 +52,7 @@ class WebSocketClient:
                     "message": message,
                 }
                 await self.websocket.send(json.dumps(message_payload))
-                logger.info(f"[ CLIENT ] Sent message: {message_payload}")
+                logger.info(f"[ CLIENT ] Sent message: {len(message_payload)}")
             except Exception as e:
                 logger.error(f"[ CLIENT ] Error sending message: {e}")
         else:
@@ -62,7 +62,7 @@ class WebSocketClient:
         """Listen for messages from the server."""
         try:
             async for message in self.websocket:
-                logger.info(f"[ CLIENT ] Received message: {message}")
+                logger.info(f"[ CLIENT ] Received message: {len(message)}")
                 await self.handle_message(message)
         except Exception as e:
             logger.error(f"[ CLIENT ] Listening error: {e}")
