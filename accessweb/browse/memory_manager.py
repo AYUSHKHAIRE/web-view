@@ -16,33 +16,37 @@ class memoryManager:
 
     def read_memory(self, user_id):
         try:
+            # Attach to the shared memory block
             shm = shared_memory.SharedMemory(name=f'shared_memory_{user_id}', create=False)
-            buffer = shm.buf.tobytes()  
-            null_index = len(buffer) - 1
-            while null_index >= 0 and buffer[null_index] == 0:
-                null_index -= 1
 
-            # Truncate at the null terminator
-            buffer = buffer[:null_index + 1]  # +1 because index is zero-based
-            if null_index != -1:
-                buffer = buffer[:null_index]  # Truncate at the null terminator
-            shm.close()
-            logger.debug(f"[ MEMORY ] Binary data read from shared memory for user_id {user_id}.{len(buffer)}")
-            return buffer
+            # Read only the non-zero portion of the buffer
+            buffer = memoryview(shm.buf).tobytes()  # Avoid creating unnecessary copies
+            null_index = buffer.find(b'\x00')  # Locate the first null byte
+            buffer = buffer[:null_index] if null_index != -1 else buffer  # Slice up to the first null byte
 
+            # Decode bytes to string
+            data = buffer.decode('utf-8')
+            logger.debug(f"[ MEMORY ] Data read from shared memory for user_id {user_id}. Size: {len(buffer)} bytes")
+            return data
         except FileNotFoundError:
-            logger.error(f"[ MEMORY ] Shared memory block for user_id {user_id} not found.")
-            return None
+            logger.error(f"[ MEMORY ] Shared memory for user_id {user_id} not found.")
         except Exception as e:
             logger.error(f"[ MEMORY ] Failed to read from shared memory for user_id {user_id}: {e}")
-            return None
+        finally:
+            try:
+                if 'shm' in locals():  # Ensure `shm` is closed
+                    shm.close()
+            except Exception as e:
+                logger.warning(f"[ MEMORY ] Failed to close shared memory for user_id {user_id}: {e}")
+
+        return ""
 
     def clean_memory(self,user_id):
         try:
-            # Connect to the existing shared memory
-            shm = shared_memory.SharedMemory(name=f"shared_memory_{user_id}")
-            # Unlink (delete) the shared memory
-            shm.unlink()
-            logger.warning(f"Shared memory /shared_memory_{user_id} removed successfully.")
+            shm = shared_memory.SharedMemory(name=f'shared_memory_{user_id}', create=False)
+            shm.unlink()  # Unlink the shared memory
+            logger.info(f"[ MEMORY ] Successfully unlinked shared memory for user_id {user_id}.")
         except FileNotFoundError:
-            logger.error(f"Shared memory /shared_memory_{user_id} not found.")
+            logger.warning(f"[ MEMORY ] Shared memory for user_id {user_id} not found during cleanup.")
+        except Exception as e:
+            logger.error(f"[ MEMORY ] Failed to unlink shared memory for user_id {user_id}: {e}")
