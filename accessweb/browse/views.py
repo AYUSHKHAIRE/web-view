@@ -62,7 +62,6 @@ def start_session(request,user_id):
     time.sleep(0.1)
     data = MM.read_memory(user_id=user_id)
     jsn_to_send = {
-        'data':data,
         'status':'OK'
     }
-    return JsonResponse(data=jsn_to_send)
+    return JsonResponse(jsn_to_send)
