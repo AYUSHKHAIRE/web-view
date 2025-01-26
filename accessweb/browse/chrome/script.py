@@ -4,11 +4,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from logger_config import logger
 from client import WebSocketClient
 from multiprocessing import shared_memory
 import os
 from threading import Thread
+import ast
+import re
 
 # Environment variables
 user_id = os.environ.get('CONTAINER_USER_ID')
@@ -17,7 +20,7 @@ auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
 logger.debug(f"Starting Docker for user: {user_id}")
 
 # Constants
-default_url = "https://tenor.com/search/playing-gifs"
+default_url = "https://www.youtube.com/watch?v=RFDeV3k2lsA"
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 
 def setup_selenium_driver():
@@ -27,6 +30,7 @@ def setup_selenium_driver():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=chrome_options
     )
@@ -65,19 +69,68 @@ def hit_url_on_browser(driver):
     end_time = time.time()
     logger.info(f"[ NAVIGATION ] Browser navigated to {default_url} in {end_time - start_time:.4f} seconds")
 
-def capture_and_write_screenshot(driver, ws_client):
-    """Capture a screenshot and write to shared memory."""
+def track_audio(driver):
+    logger.warning("Starting audio tracking script with execjs")
+
+    # JavaScript to capture audio data
+    script = """
+    const audioElement = document.querySelector('audio, video');
+    if (audioElement) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaElementSource(audioElement);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 1024;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+
+        function logFrequencyData() {
+            analyser.getByteFrequencyData(dataArray);
+            // Logging the array as a string (JSON format)
+            console.log('Array(' + dataArray.length + '): ' + JSON.stringify(Array.from(dataArray)));
+            requestAnimationFrame(logFrequencyData);
+        }
+        logFrequencyData();
+    } else {
+        console.warn("No audio or video element found.");
+    }
+    """
+    
+    try:
+        # Execute the script in the browser using Selenium
+        driver.execute_script(script)
+        logger.warning("Script executed successfully in the browser")
+    except Exception as e:
+        logger.error(f"Error executing script in the browser: {e}")
+    
+    # Retrieve console logs and parse the frequency data
     while True:
         try:
-            start_time = time.time()
-            screenshot = driver.get_screenshot_as_base64()
-            write_to_shared_memory(screenshot)
-            end_time = time.time()
-            logger.info(f"[ SCREENSHOT ] Captured and wrote screenshot in {end_time - start_time:.4f} seconds")
+            logs = driver.get_log('browser')  # Capture browser logs
+            for log in logs:
+                message = log['message']
+                logger.debug(message)
+                if "Array(" in message and "JSON.stringify" in message:
+                    # Extract the array string part from the log message
+                    try:
+                        # Extract the array part of the message, which is formatted like `Array(512): [ ... ]`
+                        start_index = message.find('[')
+                        end_index = message.find(']')
+                        frequency_data_string = message[start_index:end_index+1]
+                        
+                        # Parse the string into a Python list
+                        frequency_data = json.loads(frequency_data_string)
+                        
+                        # Output the first 10 values (or all data, depending on your need)
+                        logger.debug(f"Frequency Data: {frequency_data[:10]}...")  # Debug log the first 10 values
+                        print(frequency_data)  # Print or process the data
+                    except Exception as e:
+                        logger.error(f"Error parsing frequency data: {e}")
         except Exception as e:
-            logger.error(f"Error capturing screenshot: {e}")
+            logger.error(f"Error in audio tracking: {e}")
             break
-
+             
 def main():
     """Main function to run the client and Selenium driver."""
     logger.debug("[ CLIENT ] Starting WebSocket client...")
@@ -103,9 +156,10 @@ def main():
     hit_url_on_browser(driver)
 
     try:
-        screenshot_thread = Thread(target=capture_and_write_screenshot, args=(driver, ws_client), daemon=True)
-        screenshot_thread.start()
-
+        # screenshot_thread = Thread(target=capture_and_write_screenshot, args=(driver, ws_client), daemon=True)
+        # screenshot_thread.start()
+        audio_thread = Thread(target=track_audio, args=(driver,), daemon=True)
+        audio_thread.start()
         # Keep the main thread alive
         while True:
             time.sleep(0.01)
