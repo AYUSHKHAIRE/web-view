@@ -39,24 +39,33 @@ def setup_selenium_driver():
     logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
     return driver
 
-def write_to_shared_memory(data):
+def write_to_shared_memory(screen_data,audio_data):
     start_time = time.time()
     try:
-        shm = shared_memory.SharedMemory(name=f"shared_memory_{user_id}", create=False)
-        if not isinstance(data, str):
+        shms = shared_memory.SharedMemory(name=f"shared_memory_screen_{user_id}", create=False)
+        shma = shared_memory.SharedMemory(name=f"shared_memory_audio_{user_id}", create=False)
+        if not isinstance(screen_data, str):
             raise ValueError("Input data must be a string.")
-        encoded_data = data.encode('utf-8')
-        if len(encoded_data) > shm.size:
-            raise ValueError(f"Data size exceeds shared memory size: {len(encoded_data)} / {shm.size}")
-        shm.buf[:len(encoded_data)] = encoded_data
-        shm.buf[len(encoded_data):] = b'\x00' * (shm.size - len(encoded_data))
-        logger.info(f"Successfully wrote string data to shared memory for user {user_id} ({len(encoded_data)} bytes)")
+        if not isinstance(audio_data, str):
+            raise ValueError("Input data must be a string.")
+        encoded_data_screen = screen_data.encode('utf-8')
+        encoded_data_audio = audio_data.encode('utf-8')
+        if len(encoded_data_screen) > shms.size:
+            raise ValueError(f"Data size exceeds shared memory size: {len(encoded_data_screen)} / {shms.size}")
+        if len(encoded_data_audio) > shma.size:
+            raise ValueError(f"Data size exceeds shared memory size: {len(encoded_data_audio)} / {shma.size}")
+        shms.buf[:len(encoded_data_screen)] = encoded_data_screen
+        shms.buf[len(encoded_data_screen):] = b'\x00' * (shms.size - len(encoded_data_screen))
+        shma.buf[:len(encoded_data_audio)] = encoded_data_audio
+        shma.buf[len(encoded_data_audio):] = b'\x00' * (shma.size - len(encoded_data_audio))
+        logger.info(f"Successfully wrote string data to shared memory for user {user_id} ({len(encoded_data_screen)} | {len(encoded_data_audio)} bytes)")
     except Exception as e:
         logger.error(f"Failed to write to shared memory for user {user_id}: {e}")
     finally:
-        if 'shm' in locals():
+        if 'shma' in locals() and 'shms' in locals():
             try:
-                shm.close()
+                shms.close()
+                shma.close()
             except Exception as close_error:
                 logger.warning(f"Failed to close shared memory for user {user_id}: {close_error}")
         end_time = time.time()
@@ -69,10 +78,9 @@ def hit_url_on_browser(driver):
     end_time = time.time()
     logger.info(f"[ NAVIGATION ] Browser navigated to {default_url} in {end_time - start_time:.4f} seconds")
 
-def track_audio(driver):
+def prepare_browser_for_audio(driver):
+    """Capture a screenshot and write to shared memory."""
     logger.warning("Starting audio tracking script with execjs")
-
-    # JavaScript to capture audio data
     script = """
     const audioElement = document.querySelector('audio, video');
     if (audioElement) {
@@ -104,33 +112,39 @@ def track_audio(driver):
     except Exception as e:
         logger.error(f"Error executing script in the browser: {e}")
     
-    # Retrieve console logs and parse the frequency data
+
+def clear_and_track_log(driver):
+    logs = driver.get_log('browser')  # Capture browser logs
+    fullstring = '' 
+    for log in logs:
+        message = log['message']
+        if "Array(" in message :
+            # Extract the array string part from the log message
+            try:
+                # Extract the array part of the message, which is formatted like `Array(512): [ ... ]`
+                start_index = message.find('[')
+                end_index = message.find(']')
+                frequency_data_string = message[start_index:end_index+1]
+                fullstring += frequency_data_string
+            except Exception as e:
+                logger.error(f"Error parsing frequency data: {e}")
+    driver.execute_script('console.clear();')
+    return fullstring 
+
+def capture_and_write_screenshot_and_audio(driver):
+    prepare_browser_for_audio(driver)
     while True:
         try:
-            logs = driver.get_log('browser')  # Capture browser logs
-            for log in logs:
-                message = log['message']
-                logger.debug(message)
-                if "Array(" in message and "JSON.stringify" in message:
-                    # Extract the array string part from the log message
-                    try:
-                        # Extract the array part of the message, which is formatted like `Array(512): [ ... ]`
-                        start_index = message.find('[')
-                        end_index = message.find(']')
-                        frequency_data_string = message[start_index:end_index+1]
-                        
-                        # Parse the string into a Python list
-                        frequency_data = json.loads(frequency_data_string)
-                        
-                        # Output the first 10 values (or all data, depending on your need)
-                        logger.debug(f"Frequency Data: {frequency_data[:10]}...")  # Debug log the first 10 values
-                        print(frequency_data)  # Print or process the data
-                    except Exception as e:
-                        logger.error(f"Error parsing frequency data: {e}")
+            start_time = time.time()
+            screenshot = driver.get_screenshot_as_base64()
+            audio = clear_and_track_log(driver)
+            write_to_shared_memory(screenshot,audio)
+            end_time = time.time()
+            logger.info(f"[ SCREENSHOT ] Captured and wrote screenshot in {end_time - start_time:.4f} seconds")
         except Exception as e:
-            logger.error(f"Error in audio tracking: {e}")
+            logger.error(f"Error capturing screenshot: {e}")
             break
-             
+
 def main():
     """Main function to run the client and Selenium driver."""
     logger.debug("[ CLIENT ] Starting WebSocket client...")
@@ -144,7 +158,7 @@ def main():
     ws_client.send_message_threadsafe(type="hello", message="Hello, server!")
 
     logger.debug("[ CLIENT ] Writing to shared memory...")
-    write_to_shared_memory("Client writing to shared memory.")
+    write_to_shared_memory("Client writing to shared memory.","Client writing to shared memory.")
 
     logger.debug("[ CLIENT ] Setting up Selenium WebDriver...")
     driver = setup_selenium_driver()
@@ -156,10 +170,8 @@ def main():
     hit_url_on_browser(driver)
 
     try:
-        # screenshot_thread = Thread(target=capture_and_write_screenshot, args=(driver, ws_client), daemon=True)
-        # screenshot_thread.start()
-        audio_thread = Thread(target=track_audio, args=(driver,), daemon=True)
-        audio_thread.start()
+        screenshot_thread = Thread(target=capture_and_write_screenshot_and_audio, args=(driver, ), daemon=True)
+        screenshot_thread.start()
         # Keep the main thread alive
         while True:
             time.sleep(0.01)
