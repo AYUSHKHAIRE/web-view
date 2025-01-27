@@ -6,36 +6,48 @@ class memoryManager:
         
     def setup_memory(self, user_id):
         self.clean_memory(user_id)
-        shm = shared_memory.SharedMemory(
+        shms = shared_memory.SharedMemory(
             create=True, 
             size=6221440,  
-            name=f"shared_memory_{user_id}"
+            name=f"shared_memory_screen_{user_id}"
         )
-        self.shared_memory_pool[f'shared_memory_{user_id}'] = shm
+        shma = shared_memory.SharedMemory(
+            create=True, 
+            size=6221440,  
+            name=f"shared_memory_audio_{user_id}"
+        )
+        self.shared_memory_pool[f'shared_memory_screen_{user_id}'] = shms
+        self.shared_memory_pool[f'shared_memory_audio_{user_id}'] = shma
         logger.debug(f"[ MEMORY ] Shared memory for user_id {user_id} is set up.")
 
     def read_memory(self, user_id):
         try:
             # Attach to the shared memory block
-            shm = shared_memory.SharedMemory(name=f'shared_memory_{user_id}', create=False)
+            shms = shared_memory.SharedMemory(name=f'shared_memory_screen_{user_id}', create=False)
+            shma = shared_memory.SharedMemory(name=f'shared_memory_audio_{user_id}', create=False)
 
             # Read only the non-zero portion of the buffer
-            buffer = memoryview(shm.buf).tobytes()  # Avoid creating unnecessary copies
-            null_index = buffer.find(b'\x00')  # Locate the first null byte
-            buffer = buffer[:null_index] if null_index != -1 else buffer  # Slice up to the first null byte
+            buffers = memoryview(shms.buf).tobytes()  # Avoid creating unnecessary copies
+            buffera = memoryview(shma.buf).tobytes()  # Avoid creating unnecessary copies
+            null_indexs = buffers.find(b'\x00')  # Locate the first null byte
+            null_indexa = buffera.find(b'\x00')  # Locate the first null byte
+            buffers = buffers[:null_indexs] if null_indexs != -1 else buffers  # Slice up to the first null byte
+            buffera = buffera[:null_indexa] if null_indexa != -1 else buffera  # Slice up to the first null byte
 
             # Decode bytes to string
-            data = buffer.decode('utf-8')
-            logger.debug(f"[ MEMORY ] Data read from shared memory for user_id {user_id}. Size: {len(buffer)} bytes")
-            return data
+            datas = buffers.decode('utf-8')
+            dataa = buffera.decode('utf-8')
+            logger.debug(f"[ MEMORY ] Data read from shared memory for user_id {user_id}. Size: {len(buffers)} | {len(buffera)} bytes")
+            return datas,dataa
         except FileNotFoundError:
             logger.error(f"[ MEMORY ] Shared memory for user_id {user_id} not found.")
         except Exception as e:
             logger.error(f"[ MEMORY ] Failed to read from shared memory for user_id {user_id}: {e}")
         finally:
             try:
-                if 'shm' in locals():  # Ensure `shm` is closed
-                    shm.close()
+                if 'shms' in locals() and 'shma' in locals():  # Ensure `shm` is closed
+                    shms.close()
+                    shma.close()
             except Exception as e:
                 logger.warning(f"[ MEMORY ] Failed to close shared memory for user_id {user_id}: {e}")
 
