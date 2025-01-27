@@ -27,13 +27,7 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         try:
-            if bytes_data:
-                logger.debug(f"Received bytes data from user {self.room_name}")
-                response = {
-                    "type": "info",
-                    "message": "Binary data received successfully."
-                }
-            elif text_data:
+            if text_data:
                 data = json.loads(text_data)
                 message_type = data.get("special")
                 user_id = data.get("user_id", "unknown")
@@ -52,7 +46,7 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
-                        asyncio.create_task(self.read_and_stream_screen())
+                        asyncio.create_task(self.read_and_stream())
                         response = {
                             "type": "info",
                             "message": "Started streaming."
@@ -103,20 +97,21 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
         message = event["message"]
         await self.send(text_data=json.dumps(message))
 
-    async def read_and_stream_screen(self):
+    async def read_and_stream(self):
         while self.streaming:
             try:
                 start_time = time.perf_counter()
                 
                 # Read from shared memory
-                memory_data = MM.read_memory(user_id=self.room_name)
+                screen , audio = MM.read_memory(user_id=self.room_name)
                 read_time = time.perf_counter()
                 
-                if memory_data:
+                if screen and audio :
                     data_to_send = {
                         'user_id': self.room_name,
-                        'message': memory_data,
-                        'type': "i"
+                        'type': "i",
+                        'screen':screen,
+                        'audio':audio
                     }
                     
                     # Send data over WebSocket
@@ -139,6 +134,6 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 )
 
             except Exception as e:
-                logger.error(f"Error in read_and_stream_screen: {e}")
+                logger.error(f"Error in read_and_stream: {e}")
                 self.streaming = False
                 break
