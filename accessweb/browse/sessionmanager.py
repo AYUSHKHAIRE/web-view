@@ -11,7 +11,7 @@ class sessionManager():
     def __init__(self):
         self.shared_memory_pool = {} 
         
-    def setup_docker(self, user_id):
+    def setup_docker(self, user_id,screendex):
         path = os.path.join(BASE_DIR, "browse","docker_containers", f'docker_{user_id}')
         os.makedirs(path, exist_ok=True)
         container_name = f'docker_con_{user_id}'
@@ -44,6 +44,7 @@ class sessionManager():
                     "-v", f"{path}:/session",
                     "-e", f"CONTAINER_USER_ID={user_id}" ,
                     "-e", f"CONTAINER_USER_AUTH_TOKEN={auth_token}" ,
+                    "-e", f"SCREENDEX={screendex}" ,
                     DOCKER_IMAGE
                 ], stdout=subprocess.PIPE, 
                     stderr=subprocess.PIPE, 
