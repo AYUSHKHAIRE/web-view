@@ -51,6 +51,11 @@ function displayimage(imagestr) {
   imageContainer.src = `data:image/png;base64, ${imagestr}`;
 }
 
+function getScreen() {
+  let imageContainer = document.getElementById("imagecon");
+  let computedStyle = window.getComputedStyle(imageContainer);
+  return `${computedStyle.width}X${computedStyle.height}`
+}
 
 function estabilish_socket(user_id) {
   button.textContent = "connecting socket .";
@@ -93,9 +98,9 @@ sessionSocket.onmessage = async (event) => {
         ).toFixed(4)} ms`
       );
 
-      if (data.type === "i" && data.message) {
+      if (data.type === "i" && data.screen) {
         const displayStartTime = performance.now(); // Start timing display
-        displayimage(data.message); // Call your displayimage function with the Base64 image data
+        displayimage(data.screen); // Call your displayimage function with the Base64 image data
         const displayEndTime = performance.now(); // End timing display
         console.log(
           `[ DISPLAY IMAGE ] Time taken to display image: ${(
@@ -133,7 +138,8 @@ sessionSocket.onmessage = async (event) => {
 
 function startAsession(userid) {
   console.log("Starting the session for user:", userid);
-  const url = `${window.location.origin}/browse/start_session/${userid}`;
+  let screendex = getScreen()
+  const url = `${window.location.origin}/browse/start_session/${userid}/${screendex}/`;
   fetch(url)
     .then((response) => {
       if (!response.ok) {
@@ -169,3 +175,4 @@ button.addEventListener("click", function () {
 });
 
 fetchCookie();
+
