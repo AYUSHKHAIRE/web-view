@@ -245,3 +245,19 @@ button:hover {
   width: 100%;
   height: 100vh;
 }
+
+.imagecon{
+  margin: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 90%;
+    height: 90vh;
+}
+
+#browser_screenshot{
+  width: 90vw;
+  height: 90vh;
+  background-color: #3498db;
+}
