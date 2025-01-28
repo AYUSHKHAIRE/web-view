@@ -53,10 +53,10 @@ def getCookie(request):
     return JsonResponse({'status': "Error", 'message': "Invalid request method."}, safe=False)
 
 @login_required
-def start_session(request,user_id):
+def start_session(request,user_id,screen_dex):
     time.sleep(0.1)
     logger.debug(f"received and passed {user_id} to main server and container .")
-    SSM.setup_docker(user_id=user_id)
+    SSM.setup_docker(user_id=user_id,screendex=screen_dex)
     time.sleep(0.1)
     MM.setup_memory(user_id=user_id)
     time.sleep(0.1)
