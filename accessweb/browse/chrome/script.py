@@ -16,6 +16,12 @@ import re
 # Environment variables
 user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
+screendex = os.environ.get('SCREENDEX')
+
+screendex = screendex.replace('px', '')
+screen_width = int(float(screendex.split('X')[0]))
+screen_height = int(float(screendex.split('X')[1]))
+logger.warning(f"got screen {screen_width} {screen_height}")
 
 logger.debug(f"Starting Docker for user: {user_id}")
 
@@ -34,7 +40,7 @@ def setup_selenium_driver():
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=chrome_options
     )
-    driver.set_window_size(1920, 1080)
+    driver.set_window_size(screen_width, screen_height)
     end_time = time.time()
     logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
     return driver
