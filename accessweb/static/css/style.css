@@ -227,16 +227,26 @@ button:hover {
   color: white;
 }
 
-.maincontainer{
+.maincontainer {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   height: 100%;
   width: 100%;
+  position: relative; /* Ensure children like #controllerscon can position properly */
+  overflow: visible; /* Prevent clipping of child elements */
 }
 
-.mainmain{
+.controllerscon {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: auto; /* Allow it to adapt to content height */
+  width: 100%; /* Expand to fit parent width */
+}
+
+.mainmain {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,18 +256,95 @@ button:hover {
   height: 100vh;
 }
 
-.imagecon{
+.imagecon {
   margin: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 90%;
-    height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 90%;
+  height: 90vh;
 }
 
-#browser_screenshot{
+#browser_screenshot {
   width: 90vw;
   height: 90vh;
   background-color: #3498db;
+}
+.img-container {
+  position: relative;
+}
+.img-container img {
+  cursor: pointer;
+  border: 2px solid rgb(154, 208, 255);
+}
+.lens {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background-repeat: no-repeat;
+  border: 2px solid aliceblue;
+  display: none;
+  pointer-events: none;
+}
+
+.slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none; /* Override default CSS styles */
+  appearance: none;
+  width: 500px; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: 0.2s; /* 0.2 seconds transition on hover */
+  transition: opacity 0.2s;
+  border-radius: 11px;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04aa6d; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+  border-radius: 50%;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04aa6d; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.maincontainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.controllerscon {
+  width: 100%; /* Expand to match container width */
+  padding: 1rem;
+  position: relative; /* Position it relative to maincontainer */
+  z-index: 2; /* Ensure visibility */
+}
+
+#vistool {
+  background: transparent; /* Optional styling */
+  padding: 1rem;
+  border-radius: 10px;
 }
