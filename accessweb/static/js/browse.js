@@ -92,21 +92,21 @@ sessionSocket.onmessage = async (event) => {
       const data = JSON.parse(event.data); // Parse the JSON string into an object
 
       const parseEndTime = performance.now(); // Time after parsing JSON
-      console.log(
-        `[ WEBSOCKET ] Time taken to parse JSON: ${(
-          parseEndTime - startTime
-        ).toFixed(4)} ms`
-      );
+      // console.log(
+      //   `[ WEBSOCKET ] Time taken to parse JSON: ${(
+      //     parseEndTime - startTime
+      //   ).toFixed(4)} ms`
+      // );
 
       if (data.type === "i" && data.screen) {
         const displayStartTime = performance.now(); // Start timing display
         displayimage(data.screen); // Call your displayimage function with the Base64 image data
         const displayEndTime = performance.now(); // End timing display
-        console.log(
-          `[ DISPLAY IMAGE ] Time taken to display image: ${(
-            displayEndTime - displayStartTime
-          ).toFixed(4)} ms`
-        );
+        // console.log(
+        //   `[ DISPLAY IMAGE ] Time taken to display image: ${(
+        //     displayEndTime - displayStartTime
+        //   ).toFixed(4)} ms`
+        // );
       } else {
         console.warn("Unknown message type or missing data:", data);
       }
@@ -115,11 +115,11 @@ sessionSocket.onmessage = async (event) => {
     }
 
     const endTime = performance.now(); // End timing for the entire onmessage handler
-    console.log(
-      `[ WEBSOCKET ] Total time to process message: ${(
-        endTime - startTime
-      ).toFixed(4)} ms`
-    );
+    // console.log(
+    //   `[ WEBSOCKET ] Total time to process message: ${(
+    //     endTime - startTime
+    //   ).toFixed(4)} ms`
+    // );
   } catch (err) {
     console.error("Failed to handle WebSocket message:", err);
   }
