@@ -5,8 +5,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from logger_config import logger
-from client import WebSocketClient
 from multiprocessing import shared_memory
 import os
 from threading import Thread
@@ -29,7 +30,18 @@ logger.debug(f"Starting Docker for user: {user_id}")
 default_url = "https://www.youtube.com/watch?v=RFDeV3k2lsA"
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 
+main_driver = None
+
+def import_socket_client(): # avoid circular import
+    from client import WebSocketClient
+    return WebSocketClient
+
+def triggerbridge(type, message):
+    if type == "click_on_driver":
+        click_on_driver(x = message.x , y = message.y)
+
 def setup_selenium_driver():
+    global main_driver
     """Setup and return a Selenium WebDriver instance."""
     start_time = time.time()
     chrome_options = Options()
@@ -37,22 +49,50 @@ def setup_selenium_driver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
-    driver = webdriver.Chrome(
+    main_driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=chrome_options
     )
-    outer_width = driver.execute_script("return window.outerWidth;")
-    inner_width = driver.execute_script("return window.innerWidth;")
-    outer_height = driver.execute_script("return window.outerHeight;")
-    inner_height = driver.execute_script("return window.innerHeight;")
+    outer_width = main_driver.execute_script("return window.outerWidth;")
+    inner_width = main_driver.execute_script("return window.innerWidth;")
+    outer_height = main_driver.execute_script("return window.outerHeight;")
+    inner_height = main_driver.execute_script("return window.innerHeight;")
     width_diff = outer_width - inner_width
     height_diff = outer_height-inner_height
     n_screen_width = screen_width + width_diff
     n_screen_height = screen_height + height_diff
-    driver.set_window_size(n_screen_width, n_screen_height)
+    main_driver.set_window_size(n_screen_width, n_screen_height)
     end_time = time.time()
     logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
-    return driver
 
+def click_on_driver(x, y):
+    outer_width = main_driver.execute_script("return window.outerWidth;")
+    inner_width = main_driver.execute_script("return window.innerWidth;")
+    outer_height = main_driver.execute_script("return window.outerHeight;")
+    inner_height = main_driver.execute_script("return window.innerHeight;")
+    body_width = main_driver.execute_script("return document.body.scrollWidth;")
+    body_height = main_driver.execute_script("return document.body.scrollHeight;")
+    print('Original x and y:', x, y)
+    print('Outer Dimensions:', outer_width, outer_height)
+    print('Inner Dimensions:', inner_width, inner_height)
+    print('Body Width:', body_width, 'Body Height:', body_height)
+    new_y = y
+    if y > inner_height:
+        main_driver.execute_script(f"window.scrollTo(0, {y});")
+        time.sleep(1) 
+    current_scroll_position = main_driver.execute_script("return window.pageYOffset;")
+    new_y = y - current_scroll_position
+    print('Adjusted Y after scrolling:', new_y)
+    element = main_driver.execute_script("return document.elementFromPoint(arguments[0], arguments[1]);", x, new_y)
+    if element:
+        try:
+            action = ActionChains(main_driver)
+            action.move_to_element(element).click().perform()
+            print(f'Clicked on element at {x}, {new_y}')
+        except MoveTargetOutOfBoundsException:
+            print(f'Failed to click at {x}, {new_y} due to out of bounds error')
+    else:
+        print(f'Element not found at {x}, {new_y}')
+    
 def write_to_shared_memory(screen_data,audio_data):
     start_time = time.time()
     try:
@@ -85,14 +125,14 @@ def write_to_shared_memory(screen_data,audio_data):
         end_time = time.time()
         logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
 
-def hit_url_on_browser(driver):
+def hit_url_on_browser():
     """Navigate WebDriver to a URL."""
     start_time = time.time()
-    driver.get(default_url)
+    main_driver.get(default_url)
     end_time = time.time()
     logger.info(f"[ NAVIGATION ] Browser navigated to {default_url} in {end_time - start_time:.4f} seconds")
 
-def prepare_browser_for_audio(driver):
+def prepare_browser_for_audio():
     """Capture a screenshot and write to shared memory."""
     logger.warning("Starting audio tracking script with execjs")
     script = """
@@ -121,14 +161,14 @@ def prepare_browser_for_audio(driver):
     
     try:
         # Execute the script in the browser using Selenium
-        driver.execute_script(script)
+        main_driver.execute_script(script)
         logger.warning("Script executed successfully in the browser")
     except Exception as e:
         logger.error(f"Error executing script in the browser: {e}")
     
 
-def clear_and_track_log(driver):
-    logs = driver.get_log('browser')  # Capture browser logs
+def clear_and_track_log():
+    logs = main_driver.get_log('browser')  # Capture browser logs
     fullstring = '' 
     for log in logs:
         message = log['message']
@@ -142,16 +182,16 @@ def clear_and_track_log(driver):
                 fullstring += frequency_data_string
             except Exception as e:
                 logger.error(f"Error parsing frequency data: {e}")
-    driver.execute_script('console.clear();')
+    main_driver.execute_script('console.clear();')
     return fullstring 
 
-def capture_and_write_screenshot_and_audio(driver):
-    prepare_browser_for_audio(driver)
+def capture_and_write_screenshot_and_audio():
+    prepare_browser_for_audio()
     while True:
         try:
             start_time = time.time()
-            screenshot = driver.get_screenshot_as_base64()
-            audio = clear_and_track_log(driver)
+            screenshot = main_driver.get_screenshot_as_base64()
+            audio = clear_and_track_log()
             write_to_shared_memory(screenshot,audio)
             end_time = time.time()
             logger.info(f"[ SCREENSHOT ] Captured and wrote screenshot in {end_time - start_time:.4f} seconds")
@@ -160,6 +200,7 @@ def capture_and_write_screenshot_and_audio(driver):
             break
 
 def main():
+    WebSocketClient = import_socket_client()
     """Main function to run the client and Selenium driver."""
     logger.debug("[ CLIENT ] Starting WebSocket client...")
     client_start = time.time()
@@ -175,16 +216,16 @@ def main():
     write_to_shared_memory("Client writing to shared memory.","Client writing to shared memory.")
 
     logger.debug("[ CLIENT ] Setting up Selenium WebDriver...")
-    driver = setup_selenium_driver()
+    setup_selenium_driver()
 
-    if driver is None:
+    if main_driver is None:
         logger.error("[ CLIENT ] WebDriver setup failed.")
         return
 
-    hit_url_on_browser(driver)
+    hit_url_on_browser()
 
     try:
-        screenshot_thread = Thread(target=capture_and_write_screenshot_and_audio, args=(driver, ), daemon=True)
+        screenshot_thread = Thread(target=capture_and_write_screenshot_and_audio, daemon=True)
         screenshot_thread.start()
         # Keep the main thread alive
         while True:
@@ -194,7 +235,7 @@ def main():
         logger.info("[ CLIENT ] Shutting down...")
     finally:
         asyncio.run(ws_client.close())
-        driver.quit()
+        main_driver.quit()
 
 if __name__ == "__main__":
     start_time = time.time()
