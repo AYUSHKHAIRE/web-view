@@ -40,7 +40,15 @@ def setup_selenium_driver():
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()), options=chrome_options
     )
-    driver.set_window_size(screen_width, screen_height)
+    outer_width = driver.execute_script("return window.outerWidth;")
+    inner_width = driver.execute_script("return window.innerWidth;")
+    outer_height = driver.execute_script("return window.outerHeight;")
+    inner_height = driver.execute_script("return window.innerHeight;")
+    width_diff = outer_width - inner_width
+    height_diff = outer_height-inner_height
+    n_screen_width = screen_width + width_diff
+    n_screen_height = screen_height + height_diff
+    driver.set_window_size(n_screen_width, n_screen_height)
     end_time = time.time()
     logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
     return driver
