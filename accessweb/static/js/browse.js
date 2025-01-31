@@ -167,6 +167,23 @@ function startAsession(userid) {
     });
 }
 
+document.getElementById("browser_screenshot").addEventListener("click", function (event) {
+  const rect = this.getBoundingClientRect(); // Get image position
+  const mouseX = event.clientX - rect.left; // Mouse X relative to the image
+  const mouseY = event.clientY - rect.top; // Mouse Y relative to the image
+  console.log("Clicked at relative coordinates (X, Y):", mouseX, mouseY);
+  console.log("calling click event")
+  const message = {
+    special: "click_on_driver",
+    message: {
+      x: mouseX,
+      y: mouseY,
+    },
+  };
+  sessionSocket.send(JSON.stringify(message));
+});
+
+
 // Attach event listener
 const button = document.querySelector("#startSessionButton");
 button.addEventListener("click", function () {
