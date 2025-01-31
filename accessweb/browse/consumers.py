@@ -43,6 +43,13 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                         "message": "Hello from server!"
                     }
                     logger.debug(f"Saying hello to user {user_id}")
+                elif message_type == "click_on_driver":
+                    response = {
+                        "type": "click_on_driver",
+                        "x": data['message']['x'], 
+                        "y":data['message']['y']
+                    }
+                    logger.debug(f"Saying hello to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
@@ -118,9 +125,9 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                     await self.send(json.dumps(data_to_send))
                     send_time = time.perf_counter()
                     
-                    logger.debug(
-                        f"Sent image string to user {self.room_name}, "
-                    )
+                    # logger.debug(
+                    #     f"Sent image string to user {self.room_name}, "
+                    # )
                 else:
                     logger.warning(f"No image data found for user {self.room_name}")
                 
@@ -129,9 +136,9 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(0.1)
                 sleep_time = time.perf_counter()
                 
-                logger.debug(
-                    f"Sleep time: {sleep_time - sleep_start:.4f}s. Total loop time: {sleep_time - start_time:.4f}s"
-                )
+                # logger.debug(
+                #     f"Sleep time: {sleep_time - sleep_start:.4f}s. Total loop time: {sleep_time - start_time:.4f}s"
+                # )
 
             except Exception as e:
                 logger.error(f"Error in read_and_stream: {e}")

@@ -18,7 +18,7 @@ class memoryManager:
         )
         self.shared_memory_pool[f'shared_memory_screen_{user_id}'] = shms
         self.shared_memory_pool[f'shared_memory_audio_{user_id}'] = shma
-        logger.debug(f"[ MEMORY ] Shared memory for user_id {user_id} is set up.")
+        # logger.debug(f"[ MEMORY ] Shared memory for user_id {user_id} is set up.")
 
     def read_memory(self, user_id):
         try:
@@ -37,7 +37,7 @@ class memoryManager:
             # Decode bytes to string
             datas = buffers.decode('utf-8')
             dataa = buffera.decode('utf-8')
-            logger.debug(f"[ MEMORY ] Data read from shared memory for user_id {user_id}. Size: {len(buffers)} | {len(buffera)} bytes")
+            # logger.debug(f"[ MEMORY ] Data read from shared memory for user_id {user_id}. Size: {len(buffers)} | {len(buffera)} bytes")
             return datas,dataa
         except FileNotFoundError:
             logger.error(f"[ MEMORY ] Shared memory for user_id {user_id} not found.")
