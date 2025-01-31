@@ -3,6 +3,7 @@ from threading import Thread
 import json
 import websockets
 import asyncio
+from script import triggerbridge
 
 class WebSocketClient:
     def __init__(self, uri, user_id, auth_token):
@@ -69,11 +70,17 @@ class WebSocketClient:
 
     async def handle_message(self, message):
         """Handle incoming WebSocket messages."""
+        logger.warning(f'{message}')
         data = json.loads(message)
         if data.get("type") == "register":
             logger.info(f"[ CLIENT ] Registration successful for user_id: {self.user_id}")
             # Send hello message
             await self.send_message(type="hello", message="Hello, server!")
+        if data.get("type") == "click_on_driver":
+            logger.info(f"[ CLIENT ] click request for user_id: {self.user_id}")
+            logger.warning(data)
+            triggerbridge(type="click_on_driver", message=data)
+            await self.send_message(type="click_on_driver", message=data)
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 

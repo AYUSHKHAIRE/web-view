@@ -26,11 +26,10 @@ logger.warning(f"got screen {screen_width} {screen_height}")
 
 logger.debug(f"Starting Docker for user: {user_id}")
 
+main_driver = None
 # Constants
 default_url = "https://www.youtube.com/watch?v=RFDeV3k2lsA"
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
-
-main_driver = None
 
 def import_socket_client(): # avoid circular import
     from client import WebSocketClient
@@ -38,7 +37,7 @@ def import_socket_client(): # avoid circular import
 
 def triggerbridge(type, message):
     if type == "click_on_driver":
-        click_on_driver(x = message.x , y = message.y)
+        click_on_driver(x = message['x'] , y = message['y'])
 
 def setup_selenium_driver():
     global main_driver
@@ -65,33 +64,34 @@ def setup_selenium_driver():
     logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
 
 def click_on_driver(x, y):
+    logger.warning("starting clickinng process")
     outer_width = main_driver.execute_script("return window.outerWidth;")
     inner_width = main_driver.execute_script("return window.innerWidth;")
     outer_height = main_driver.execute_script("return window.outerHeight;")
     inner_height = main_driver.execute_script("return window.innerHeight;")
     body_width = main_driver.execute_script("return document.body.scrollWidth;")
     body_height = main_driver.execute_script("return document.body.scrollHeight;")
-    print('Original x and y:', x, y)
-    print('Outer Dimensions:', outer_width, outer_height)
-    print('Inner Dimensions:', inner_width, inner_height)
-    print('Body Width:', body_width, 'Body Height:', body_height)
+    logger.info('Original x and y:', x, y)
+    logger.info('Outer Dimensions:', outer_width, outer_height)
+    logger.info('Inner Dimensions:', inner_width, inner_height)
+    logger.info('Body Width:', body_width, 'Body Height:', body_height)
     new_y = y
     if y > inner_height:
         main_driver.execute_script(f"window.scrollTo(0, {y});")
         time.sleep(1) 
     current_scroll_position = main_driver.execute_script("return window.pageYOffset;")
     new_y = y - current_scroll_position
-    print('Adjusted Y after scrolling:', new_y)
+    logger.info('Adjusted Y after scrolling:', new_y)
     element = main_driver.execute_script("return document.elementFromPoint(arguments[0], arguments[1]);", x, new_y)
     if element:
         try:
             action = ActionChains(main_driver)
             action.move_to_element(element).click().perform()
-            print(f'Clicked on element at {x}, {new_y}')
+            logger.debug(f'Clicked on element at {x}, {new_y}')
         except MoveTargetOutOfBoundsException:
-            print(f'Failed to click at {x}, {new_y} due to out of bounds error')
+            logger.error(f'Failed to click at {x}, {new_y} due to out of bounds error')
     else:
-        print(f'Element not found at {x}, {new_y}')
+        logger.warning(f'Element not found at {x}, {new_y}')
     
 def write_to_shared_memory(screen_data,audio_data):
     start_time = time.time()
@@ -112,7 +112,7 @@ def write_to_shared_memory(screen_data,audio_data):
         shms.buf[len(encoded_data_screen):] = b'\x00' * (shms.size - len(encoded_data_screen))
         shma.buf[:len(encoded_data_audio)] = encoded_data_audio
         shma.buf[len(encoded_data_audio):] = b'\x00' * (shma.size - len(encoded_data_audio))
-        logger.info(f"Successfully wrote string data to shared memory for user {user_id} ({len(encoded_data_screen)} | {len(encoded_data_audio)} bytes)")
+        # logger.info(f"Successfully wrote string data to shared memory for user {user_id} ({len(encoded_data_screen)} | {len(encoded_data_audio)} bytes)")
     except Exception as e:
         logger.error(f"Failed to write to shared memory for user {user_id}: {e}")
     finally:
@@ -123,7 +123,7 @@ def write_to_shared_memory(screen_data,audio_data):
             except Exception as close_error:
                 logger.warning(f"Failed to close shared memory for user {user_id}: {close_error}")
         end_time = time.time()
-        logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
+        # logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
 
 def hit_url_on_browser():
     """Navigate WebDriver to a URL."""
@@ -194,7 +194,7 @@ def capture_and_write_screenshot_and_audio():
             audio = clear_and_track_log()
             write_to_shared_memory(screenshot,audio)
             end_time = time.time()
-            logger.info(f"[ SCREENSHOT ] Captured and wrote screenshot in {end_time - start_time:.4f} seconds")
+            # logger.info(f"[ SCREENSHOT ] Captured and wrote screenshot in {end_time - start_time:.4f} seconds")
         except Exception as e:
             logger.error(f"Error capturing screenshot: {e}")
             break
