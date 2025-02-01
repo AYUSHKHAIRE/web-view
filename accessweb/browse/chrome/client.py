@@ -3,7 +3,6 @@ from threading import Thread
 import json
 import websockets
 import asyncio
-from script import triggerbridge
 
 class WebSocketClient:
     def __init__(self, uri, user_id, auth_token):
@@ -13,6 +12,10 @@ class WebSocketClient:
         self.websocket = None
         self.loop = asyncio.new_event_loop()
 
+    def get_selenium_manager(self):
+        from script import SM
+        return SM 
+    
     def start_in_thread(self):
         """Start WebSocket client in a separate thread."""
         thread = Thread(target=self.run, daemon=True)
@@ -79,7 +82,8 @@ class WebSocketClient:
         if data.get("type") == "click_on_driver":
             logger.info(f"[ CLIENT ] click request for user_id: {self.user_id}")
             logger.warning(data)
-            triggerbridge(type="click_on_driver", message=data)
+            SM = self.get_selenium_manager()
+            SM.triggerbridge(type="click_on_driver", message=data)
             await self.send_message(type="click_on_driver", message=data)
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
