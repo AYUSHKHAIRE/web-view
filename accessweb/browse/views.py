@@ -23,7 +23,6 @@ SSM = sessionManager()
 
 # WSS.start_in_thread()
 
-
 @login_required
 def index(request):
     user_id = UserProfile.objects.get(user = request.user.id).uuid
