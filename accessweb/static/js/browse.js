@@ -51,6 +51,38 @@ function displayimage(imagestr) {
   imageContainer.src = `data:image/png;base64, ${imagestr}`;
 }
 
+function playFrequencies(frequencies, duration = 0.5) {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let startTime = audioCtx.currentTime;
+ console.log("playing batch")
+  function playNext(index) {
+    if (index >= frequencies.length) return; // Stop if all frequencies are played
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = "sine"; // You can change this to 'square', 'sawtooth', or 'triangle'
+    oscillator.frequency.setValueAtTime(
+      frequencies[index],
+      audioCtx.currentTime
+    );
+
+    // Connect the nodes
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    // console.log(`Playing frequency: ${frequencies[index]} Hz`);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+
+    // Schedule next frequency after `duration` seconds
+    setTimeout(() => playNext(index + 1), duration * 1000);
+  }
+
+  playNext(0); // Start playing the first frequency
+}
+
+
 function getScreen() {
   let imageContainer = document.getElementById("imagecon");
   let computedStyle = window.getComputedStyle(imageContainer);
@@ -86,44 +118,44 @@ function estabilish_socket(user_id) {
   };
 sessionSocket.onmessage = async (event) => {
   try {
-    const startTime = performance.now(); // Start timing
-
     if (typeof event.data === "string") {
-      const data = JSON.parse(event.data); // Parse the JSON string into an object
+      let trimmedData = event.data.trim();
 
-      const parseEndTime = performance.now(); // Time after parsing JSON
-      // console.log(
-      //   `[ WEBSOCKET ] Time taken to parse JSON: ${(
-      //     parseEndTime - startTime
-      //   ).toFixed(4)} ms`
-      // );
+      // Check if it starts and ends correctly
+      if (!(trimmedData.startsWith("{") && trimmedData.endsWith("}"))) {
+        console.error("Invalid JSON format:", trimmedData);
+        return;
+      }
 
-      if (data.type === "i" && data.screen) {
-        const displayStartTime = performance.now(); // Start timing display
-        displayimage(data.screen); // Call your displayimage function with the Base64 image data
-        const displayEndTime = performance.now(); // End timing display
-        // console.log(
-        //   `[ DISPLAY IMAGE ] Time taken to display image: ${(
-        //     displayEndTime - displayStartTime
-        //   ).toFixed(4)} ms`
-        // );
+      // Attempt to parse
+      const data = JSON.parse(trimmedData);
+
+      if (data.type === "i" && data.screen && data.audio) {
+        displayimage(data.screen);
+
+        // if (typeof data.audio === "string") {
+        //   try {
+        //     let audioArray = data.audio.split(",").map(Number);
+        //     if (Array.isArray(audioArray)) {
+        //       playFrequencies(audioArray);
+        //     } else {
+        //       console.error("Audio data is not an array:", audioArray);
+        //     }
+        //   } catch (error) {
+        //     console.error("Failed to parse audio JSON:", error);
+        //   }
+        // }
       } else {
         console.warn("Unknown message type or missing data:", data);
       }
     } else {
       console.warn("Unknown WebSocket message type:", typeof event.data);
     }
-
-    const endTime = performance.now(); // End timing for the entire onmessage handler
-    // console.log(
-    //   `[ WEBSOCKET ] Total time to process message: ${(
-    //     endTime - startTime
-    //   ).toFixed(4)} ms`
-    // );
   } catch (err) {
     console.error("Failed to handle WebSocket message:", err);
   }
 };
+
 
   sessionSocket.onerror = (error) => {
     console.error("WebSocket encountered an error:", error);
