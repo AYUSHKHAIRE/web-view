@@ -274,6 +274,7 @@ class selenium_manager:
                     start_index = message.find('[')
                     end_index = message.find(']')
                     frequency_data_string = message[start_index:end_index+1]
+                    frequency_data_string =  frequency_data_string.replace('[', '').replace(']', '')
                     fullstring += frequency_data_string
                 except Exception as e:
                     logger.error(f"Error parsing frequency data: {e}")
