@@ -139,6 +139,20 @@ body {
   bottom: 30px;
   width: 100%;
 }
+
+/* search  */
+
+.search{
+  background-color: transparent;
+  border: 2px solid aliceblue;
+  color: #d3d3d3;
+  padding: 3px;
+  height: 60px;
+  border-radius: 30px;
+  margin: 0px 200px;
+  width: 70%;
+  font-size: 20px;
+}
 /* Responsive media query code for small screens */
 @media (max-width: 1024px) {
   .sidebar {
