@@ -51,8 +51,8 @@ function displayimage(imagestr) {
   imageContainer.src = `data:image/png;base64, ${imagestr}`;
 }
 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playFrequencies(frequencies, duration = 0.5) {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let startTime = audioCtx.currentTime;
  console.log("playing batch")
   function playNext(index) {
@@ -133,18 +133,18 @@ sessionSocket.onmessage = async (event) => {
       if (data.type === "i" && data.screen && data.audio) {
         displayimage(data.screen);
 
-        // if (typeof data.audio === "string") {
-        //   try {
-        //     let audioArray = data.audio.split(",").map(Number);
-        //     if (Array.isArray(audioArray)) {
-        //       playFrequencies(audioArray);
-        //     } else {
-        //       console.error("Audio data is not an array:", audioArray);
-        //     }
-        //   } catch (error) {
-        //     console.error("Failed to parse audio JSON:", error);
-        //   }
-        // }
+        if (typeof data.audio === "string") {
+          try {
+            let audioArray = data.audio.split(",").map(Number);
+            if (Array.isArray(audioArray)) {
+              playFrequencies(audioArray);
+            } else {
+              console.error("Audio data is not an array:", audioArray);
+            }
+          } catch (error) {
+            console.error("Failed to parse audio JSON:", error);
+          }
+        }
       } else {
         console.warn("Unknown message type or missing data:", data);
       }
@@ -215,6 +215,18 @@ document.getElementById("browser_screenshot").addEventListener("click", function
   sessionSocket.send(JSON.stringify(message));
 });
 
+// Attach event listener
+const search_button = document.querySelector("#search_btn");
+search_button.addEventListener("click", function () {
+  let querry = document.getElementById("search").value
+  sessionSocket.send(
+    JSON.stringify({
+      "user_id": getUserId(),
+      "querry": querry,
+      "special":"search"
+    })
+  )
+});
 
 // Attach event listener
 const button = document.querySelector("#startSessionButton");
