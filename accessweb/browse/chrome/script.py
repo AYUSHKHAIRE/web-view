@@ -93,6 +93,11 @@ class WebSocketClient:
             logger.warning(data)
             SM.triggerbridge(type="click_on_driver",message=data)
             logger.warning("[ CLIENT ] click complete .")
+        if data.get("type") == "search":
+            logger.info(f"[ CLIENT ] search request for user_id: {self.user_id}")
+            logger.warning(data)
+            SM.triggerbridge(type="search",message=data)
+            logger.warning("[ CLIENT ] search complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -149,7 +154,14 @@ class selenium_manager:
                 self.driver_message = "click_on_driver"
                 self.driver_instruction = message
                 logger.debug("set up click onn driver . hhanding over tto tread")
-    
+            except  Exception as e:
+                logger.error(f"Error in clicking driver: {e}")
+        elif type == "search":
+            try:
+                logger.debug("trying to set up search onn driver")
+                self.driver_message = "search"
+                self.driver_instruction = message
+                logger.debug("set up search onn driver . hhanding over tto tread")
             except  Exception as e:
                 logger.error(f"Error in clicking driver: {e}")
             
@@ -187,6 +199,22 @@ class selenium_manager:
                 return driver
         else:
             logger.error("Error in clicking driver")
+            
+    def search_on_driver(self,driver,querry):
+        logger.warning("starting searching process")
+        logger.warning("locked .")
+        if driver:
+            try:
+                if 'http' or 'htttps' in querry:
+                    driver.get(url = querry)
+                else:
+                    nq = querry.replace(' ',"+")
+                    driver.get(f'https://www.google.com/search?q=a{nq}&oq={nq}&sourceid=chrome&ie=UTF-8')
+                return driver
+            except Exception as e:
+                logger.error(f"Error in searching driver: {e}")
+        else:
+            logger.error("Error in clicking driver")
                 
     def write_to_shared_memory(self,screen_data,audio_data):
         start_time = time.time()
@@ -218,7 +246,7 @@ class selenium_manager:
                 except Exception as close_error:
                     logger.warning(f"Failed to close shared memory for user {user_id}: {close_error}")
             end_time = time.time()
-            logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
+            # logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
 
     def hit_url_on_browser(self):
         """Navigate WebDriver to a URL."""
@@ -290,7 +318,7 @@ class selenium_manager:
                     screenshot = self.driver.get_screenshot_as_base64()
                     audio = self.clear_and_track_log()
                     self.write_to_shared_memory(screenshot,audio)
-                    logger.warning("looking for operators")
+                    # logger.warning("looking for operators")
                     if self.driver_instruction and self.driver_message:
                         logger.warning("operator cracked")
                         logger.warning(f"prinnting values {self.driver_instruction} and {self.driver_message}")
@@ -304,8 +332,15 @@ class selenium_manager:
                             logger.debug("click operation complete")
                             self.driver_instruction = None
                             self.driver_message = None
-                        logger.debug("wrapping up click")
-                    logger.warning("operator bypass")
+                            logger.debug("wrapping up click")
+                        elif self.driver_message == "search":
+                            querry = self.driver_instruction['qurrey']
+                            self.search_on_driver(driver=self.driver,querry=querry)
+                            logger.debug("search operation complete")
+                            self.driver_instruction = None
+                            self.driver_message = None
+                            logger.debug("wrapping up click")
+                    # logger.warning("operator bypass")
                 else:
                     logger.error("driver is None")
                 end_time = time.time()
