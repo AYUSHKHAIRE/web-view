@@ -119,7 +119,7 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 screen , audio = MM.read_memory(user_id=self.room_name)
                 read_time = time.perf_counter()
                 
-                if screen and audio :
+                if screen or audio :
                     data_to_send = {
                         'user_id': self.room_name,
                         'type': "i",
@@ -136,6 +136,11 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                     # )
                 else:
                     logger.warning(f"No image data found for user {self.room_name}")
+                    flag = MM.shared_memory_exists(user_id=self.room_name)
+                    if flag == False:
+                        logger.warning(f"Shared memory not found for user {self.room_name}.")
+                        logger.warning(f"setting memory again for user {self.room_name}.")
+                        MM.setup_memory(user_id=self.room_name)
                 
                 # Sleep
                 sleep_start = time.perf_counter()
