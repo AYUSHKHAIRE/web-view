@@ -130,7 +130,7 @@ sessionSocket.onmessage = async (event) => {
       // Attempt to parse
       const data = JSON.parse(trimmedData);
 
-      if (data.type === "i" && data.screen && data.audio) {
+      if (data.type === "i" && data.screen || data.audio) {
         displayimage(data.screen);
 
         if (typeof data.audio === "string") {
