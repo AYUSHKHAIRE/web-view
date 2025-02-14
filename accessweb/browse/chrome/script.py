@@ -122,6 +122,7 @@ class selenium_manager:
         self.driver_lock = RLock()
         self.driver_instruction = None
         self.driver_message = None
+        self.default_url = "https://cse.google.com/cse?cx=e5856f31c6fb143cb"
         
     def setup_selenium_driver(self):
         """Setup and return a Selenium WebDriver instance."""
@@ -221,6 +222,12 @@ class selenium_manager:
         try:
             shms = shared_memory.SharedMemory(name=f"shared_memory_screen_{user_id}", create=False)
             shma = shared_memory.SharedMemory(name=f"shared_memory_audio_{user_id}", create=False)
+            if  shms and shma:
+                # logger.warning(f"shared memory found for user {user_id}")
+                pass
+            else:
+                # logger.warning(f"shared memory not found for user {user_id}")
+                pass
             if not isinstance(screen_data, str):
                 raise ValueError("Input data must be a string.")
             if not isinstance(audio_data, str):
@@ -248,14 +255,18 @@ class selenium_manager:
             end_time = time.time()
             # logger.info(f"[ MEMORY ] Writing to shared memory took {end_time - start_time:.4f} seconds")
 
-    def hit_url_on_browser(self):
+    def hit_url_on_browser(self,driver,url = None):
+        url = None
+        if url == None:
+            url = self.default_url
         """Navigate WebDriver to a URL."""
         start_time = time.time()
-        self.driver.get(default_url)
+        driver.get(url)
         end_time = time.time()
-        logger.info(f"[ NAVIGATION ] Browser navigated to {default_url} in {end_time - start_time:.4f} seconds")
+        logger.info(f"[ NAVIGATION ] Browser navigated to {url} in {end_time - start_time:.4f} seconds")
+        return driver
 
-    def prepare_browser_for_audio(self):
+    def prepare_browser_for_audio(self,driver):
         """Capture a screenshot and write to shared memory."""
         logger.warning("Starting audio tracking script with execjs")
         script = """
@@ -284,14 +295,14 @@ class selenium_manager:
         
         try:
             # Execute the script in the browser using Selenium
-            self.driver.execute_script(script)
+            driver.execute_script(script)
             logger.warning("Script executed successfully in the browser")
+            return driver
         except Exception as e:
             logger.error(f"Error executing script in the browser: {e}")
         
-
-    def clear_and_track_log(self):
-        logs = self.driver.get_log('browser')  # Capture browser logs
+    def clear_and_track_log(self,driver):
+        logs = driver.get_log('browser')  # Capture browser logs
         fullstring = '' 
         for log in logs:
             message = log['message']
@@ -306,17 +317,17 @@ class selenium_manager:
                     fullstring += frequency_data_string
                 except Exception as e:
                     logger.error(f"Error parsing frequency data: {e}")
-        self.driver.execute_script('console.clear();')
-        return fullstring 
+        driver.execute_script('console.clear();')
+        return driver,fullstring 
 
     def capture_and_write_screenshot_and_audio(self):
-        self.prepare_browser_for_audio()
+        self.driver = self.prepare_browser_for_audio(self.driver)
         while True:
             try:
                 start_time = time.time()
                 if self.driver != None:
                     screenshot = self.driver.get_screenshot_as_base64()
-                    audio = self.clear_and_track_log()
+                    self.driver,audio = self.clear_and_track_log(self.driver)
                     self.write_to_shared_memory(screenshot,audio)
                     # logger.warning("looking for operators")
                     if self.driver_instruction and self.driver_message:
@@ -361,7 +372,6 @@ logger.warning(f"got screen {screen_width} {screen_height}")
 
 logger.debug(f"Starting Docker for user: {user_id}")
 
-default_url = "https://www.youtube.com/watch?v=RFDeV3k2lsA"
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 
 SM = selenium_manager()
@@ -389,7 +399,7 @@ def main():
         logger.error("[ CLIENT ] WebDriver setup failed.")
         return
 
-    SM.hit_url_on_browser()
+    SM.driver = SM.hit_url_on_browser(SM.driver)
 
     try:
         screenshot_thread = Thread(target=SM.capture_and_write_screenshot_and_audio,daemon=True)
