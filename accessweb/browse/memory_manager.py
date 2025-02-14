@@ -62,3 +62,21 @@ class memoryManager:
             logger.warning(f"[ MEMORY ] Shared memory for user_id {user_id} not found during cleanup.")
         except Exception as e:
             logger.error(f"[ MEMORY ] Failed to unlink shared memory for user_id {user_id}: {e}")
+
+    def shared_memory_exists(self,user_id):
+        try:
+            logger.warning(f"Checking shared memory for user_id {user_id}.")
+            screen_memory = f"shared_memory_screen_{user_id}"
+            audio_memory = f"shared_memory_audio_{user_id}"
+            shms = shared_memory.SharedMemory(name=screen_memory, create=False)
+            shma = shared_memory.SharedMemory(name=audio_memory, create=False)
+            shms.close()  # Close immediately if it exists
+            shma.close()  # Close immediately if it exists
+            logger.warning(f"[ MEMORY ] Shared memory for user_id {user_id} exists.")
+            return True
+        except FileNotFoundError:
+            logger.error(f"[ MEMORY ] Shared memory for user_id {user_id} does not exist.")
+            return False  # Shared memory does not exist
+        except Exception as e:
+            print(f"[ MEMORY ] Unexpected error while checking shared memory '{user_id}': {e}")
+            return False  # Handle other errors safely
