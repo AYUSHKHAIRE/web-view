@@ -103,6 +103,11 @@ class WebSocketClient:
             logger.warning(data)
             SM.triggerbridge(type="keypress",message=data)
             logger.warning("[ CLIENT ] keypress complete .")
+        if data.get("type") == "hover":
+            logger.info(f"[ CLIENT ] hover request for user_id: {self.user_id}")
+            logger.warning(data)
+            SM.triggerbridge(type="hover",message=data)
+            logger.warning("[ CLIENT ] hover complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -178,6 +183,14 @@ class selenium_manager:
                 logger.debug("set up keypress onn driver . hhanding over tto tread")
             except  Exception as e:
                 logger.error(f"Error in clicking driver: {e}")
+        elif type == "hover":
+            try:
+                logger.debug("trying to set up hover onn driver")
+                self.driver_message = "hover"
+                self.driver_instruction = message
+                logger.debug("set up hover onn driver . hhanding over tto tread")
+            except  Exception as e:
+                logger.error(f"Error in hovering driver: {e}")
             
     def click_on_driver(self,driver,x, y):
         logger.warning("starting clickinng process")
@@ -243,6 +256,20 @@ class selenium_manager:
                 else:
                     nq = querry.replace(' ',"+")
                     driver.get(f'https://www.google.com/search?q=a{nq}&oq={nq}&sourceid=chrome&ie=UTF-8')
+                return driver
+            except Exception as e:
+                logger.error(f"Error in searching driver: {e}")
+        else:
+            logger.error("Error in clicking driver")
+    
+    def hover_on_driver(self,driver,x,y):
+        logger.warning("starting hovering process")
+        logger.warning("locked .")
+        element = driver.execute_script("return document.elementFromPoint(arguments[0], arguments[1]);", x, y)
+        if driver:
+            try:
+                action = ActionChains(driver)
+                action.move_to_element(element).perform()
                 return driver
             except Exception as e:
                 logger.error(f"Error in searching driver: {e}")
@@ -390,6 +417,14 @@ class selenium_manager:
                             self.driver_instruction = None
                             self.driver_message = None
                             logger.debug("wrapping up type")
+                        elif self.driver_message == "hover":
+                            x = self.driver_instruction['x']
+                            y = self.driver_instruction['y']
+                            self.hover_on_driver(driver=self.driver,x=x,y = y)
+                            logger.debug("hover operation complete")
+                            self.driver_instruction = None
+                            self.driver_message = None
+                            logger.debug("wrapping up hover")
                     # logger.warning("operator bypass")
                 else:
                     logger.error("driver is None")
