@@ -98,6 +98,11 @@ class WebSocketClient:
             logger.warning(data)
             SM.triggerbridge(type="search",message=data)
             logger.warning("[ CLIENT ] search complete .")
+        if data.get("type") == "keypress":
+            logger.info(f"[ CLIENT ] key press request for user_id: {self.user_id}")
+            logger.warning(data)
+            SM.triggerbridge(type="keypress",message=data)
+            logger.warning("[ CLIENT ] keypress complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -165,6 +170,14 @@ class selenium_manager:
                 logger.debug("set up search onn driver . hhanding over tto tread")
             except  Exception as e:
                 logger.error(f"Error in clicking driver: {e}")
+        elif type == "keypress":
+            try:
+                logger.debug("trying to set up key pressed onn driver")
+                self.driver_message = "keypress"
+                self.driver_instruction = message
+                logger.debug("set up keypress onn driver . hhanding over tto tread")
+            except  Exception as e:
+                logger.error(f"Error in clicking driver: {e}")
             
     def click_on_driver(self,driver,x, y):
         logger.warning("starting clickinng process")
@@ -176,16 +189,16 @@ class selenium_manager:
             inner_height = driver.execute_script("return window.innerHeight;")
             body_width = driver.execute_script("return document.body.scrollWidth;")
             body_height = driver.execute_script("return document.body.scrollHeight;")
-            logger.info('Original x and y:', x, y)
-            logger.info('Outer Dimensions:', outer_width, outer_height)
-            logger.info('Inner Dimensions:', inner_width, inner_height)
-            logger.info('Body Width:', body_width, 'Body Height:', body_height)
+            # logger.info('Original x and y:', x, y)
+            # logger.info('Outer Dimensions:', outer_width, outer_height)
+            # logger.info('Inner Dimensions:', inner_width, inner_height)
+            # logger.info('Body Width:', body_width, 'Body Height:', body_height)
             new_y = y
             if y > inner_height:
                 driver.execute_script(f"window.scrollTo(0, {y});")
             current_scroll_position = driver.execute_script("return window.pageYOffset;")
             new_y = y - current_scroll_position
-            logger.info('Adjusted Y after scrolling:', new_y)
+            logger.info(f'Adjusted Y after scrolling: {new_y}')
             element = driver.execute_script("return document.elementFromPoint(arguments[0], arguments[1]);", x, new_y)
             if element:
                 try:
@@ -197,6 +210,25 @@ class selenium_manager:
                     logger.error(f'Failed to click at {x}, {new_y} due to out of bounds error')
             else:
                 logger.warning(f'Element not found at {x}, {new_y}')
+                return driver
+        else:
+            logger.error("Error in clicking driver")
+            
+    def type_on_driver(self,driver,key):
+        logger.warning("starting typinng process")
+        logger.warning("locked .")
+        if driver:
+            element = driver.switch_to.active_element
+            logger.warning(f"Active element: {element.tag_name}" )
+            if element:
+                try:
+                    logger.warning("element got target")
+                    element.send_keys(key)
+                    return driver
+                except MoveTargetOutOfBoundsException:
+                    logger.error(f'Failed to type')
+            else:
+                logger.warning(f'Element not found')
                 return driver
         else:
             logger.error("Error in clicking driver")
@@ -351,6 +383,13 @@ class selenium_manager:
                             self.driver_instruction = None
                             self.driver_message = None
                             logger.debug("wrapping up click")
+                        elif self.driver_message == "keypress":
+                            key = self.driver_instruction['key']
+                            self.type_on_driver(driver=self.driver,key=key)
+                            logger.debug("key operation complete")
+                            self.driver_instruction = None
+                            self.driver_message = None
+                            logger.debug("wrapping up type")
                     # logger.warning("operator bypass")
                 else:
                     logger.error("driver is None")
