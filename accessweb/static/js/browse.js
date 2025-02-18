@@ -46,6 +46,58 @@ async function fetchCookie() {
   }
 }
 
+let isHovering = false;
+let lastSentX = null;
+let lastSentY = null;
+
+function getCursor(event) {
+  let bounds = img.getBoundingClientRect();
+  let x = event.clientX - bounds.left;
+  let y = event.clientY - bounds.top;
+  return { x, y };
+}
+
+function sendHoverData(x, y) {
+  const message = {
+    user_id: getUserId(),
+    special: "hover",
+    message: { x, y },
+  };
+  sessionSocket.send(JSON.stringify(message));
+}
+
+// Function to track mouse movement
+function trackMouse(event) {
+  isHovering = true;
+  let { x, y } = getCursor(event);
+  moveLens({ x, y });
+
+  // Update last cursor position
+  lastSentX = x;
+  lastSentY = y;
+}
+
+// Check and send hover data every second
+setInterval(() => {
+  if (isHovering && lastSentX !== null && lastSentY !== null) {
+    sendHoverData(lastSentX, lastSentY);
+  }
+}, 1000);
+
+function repeatAndSendHover() {
+  const imgContainer = document.querySelector(".img-container");
+  imgContainer.addEventListener("mousemove", trackMouse);
+  imgContainer.addEventListener("mouseenter", () => {
+    isHovering = true;
+  });
+  imgContainer.addEventListener("mouseleave", () => {
+    isHovering = false;
+    lens.style.display = "none";
+  });
+}
+
+repeatAndSendHover();
+
 function displayimage(imagestr) {
   const imageContainer = document.querySelector("#browser_screenshot");
   imageContainer.src = `data:image/png;base64, ${imagestr}`;
@@ -206,6 +258,7 @@ document.getElementById("browser_screenshot").addEventListener("click", function
   console.log("Clicked at relative coordinates (X, Y):", mouseX, mouseY);
   console.log("calling click event")
   const message = {
+    user_id: getUserId(),
     special: "click_on_driver",
     message: {
       x: mouseX,
@@ -220,6 +273,7 @@ function detect_pressed_key() {
     const key = event.key;
     console.log("Key pressed:", key);
     const message = {
+      user_id: getUserId(),
       special: "keypress",
       message: {
         key: key
