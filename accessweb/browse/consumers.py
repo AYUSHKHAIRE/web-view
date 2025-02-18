@@ -56,6 +56,12 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                         "qurrey": data['querry']
                     }
                     logger.debug(f"Saying hello to user {user_id}")
+                elif message_type == "keypress":
+                    response = {
+                        "type": "keypress",
+                        "key": data['message']['key']
+                    }
+                    logger.debug(f"Saying hello to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
