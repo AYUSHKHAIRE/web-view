@@ -49,19 +49,26 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                         "x": data['message']['x'], 
                         "y":data['message']['y']
                     }
-                    logger.debug(f"Saying hello to user {user_id}")
+                    logger.debug(f"Saying click to user {user_id}")
                 elif message_type == "search":
                     response = {
                         "type": "search",
                         "qurrey": data['querry']
                     }
-                    logger.debug(f"Saying hello to user {user_id}")
+                    logger.debug(f"Saying search to user {user_id}")
                 elif message_type == "keypress":
                     response = {
                         "type": "keypress",
                         "key": data['message']['key']
                     }
-                    logger.debug(f"Saying hello to user {user_id}")
+                    logger.debug(f"Saying keypress to user {user_id}")
+                elif message_type == "hover":
+                    response = {
+                        "type": "hover",
+                        "x": data['message']['x'],
+                        "y": data['message']['y']
+                    }
+                    logger.debug(f"Saying hover to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
