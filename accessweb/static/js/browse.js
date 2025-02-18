@@ -215,6 +215,20 @@ document.getElementById("browser_screenshot").addEventListener("click", function
   sessionSocket.send(JSON.stringify(message));
 });
 
+function detect_pressed_key() {
+  document.addEventListener("keypress", () => {
+    const key = event.key;
+    console.log("Key pressed:", key);
+    const message = {
+      special: "keypress",
+      message: {
+        key: key
+      },
+    };
+    sessionSocket.send(JSON.stringify(message));
+  })
+}
+
 // Attach event listener
 const search_button = document.querySelector("#search_btn");
 search_button.addEventListener("click", function () {
@@ -235,5 +249,5 @@ button.addEventListener("click", function () {
   startAsession(userid);
 });
 
+detect_pressed_key();
 fetchCookie();
-
