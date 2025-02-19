@@ -1,11 +1,18 @@
 from multiprocessing import shared_memory
 from browse.logger_config import logger
 class memoryManager:
-    def __init__(self):
+    def __init__(
+        self
+    ):
         self.shared_memory_pool = {} 
         
-    def setup_memory(self, user_id):
-        self.clean_memory(user_id)
+    def setup_memory(
+        self, 
+        user_id
+    ):
+        self.clean_memory(
+            user_id
+        )
         shms = shared_memory.SharedMemory(
             create=True, 
             size=6221440,  
@@ -20,15 +27,28 @@ class memoryManager:
         self.shared_memory_pool[f'shared_memory_audio_{user_id}'] = shma
         # logger.debug(f"[ MEMORY ] Shared memory for user_id {user_id} is set up.")
 
-    def read_memory(self, user_id):
+    def read_memory(
+        self, 
+        user_id
+    ):
         try:
             # Attach to the shared memory block
-            shms = shared_memory.SharedMemory(name=f'shared_memory_screen_{user_id}', create=False)
-            shma = shared_memory.SharedMemory(name=f'shared_memory_audio_{user_id}', create=False)
+            shms = shared_memory.SharedMemory(
+                name=f'shared_memory_screen_{user_id}', 
+                create=False
+            )
+            shma = shared_memory.SharedMemory(
+                name=f'shared_memory_audio_{user_id}', 
+                create=False
+            )
 
             # Read only the non-zero portion of the buffer
-            buffers = memoryview(shms.buf).tobytes()  # Avoid creating unnecessary copies
-            buffera = memoryview(shma.buf).tobytes()  # Avoid creating unnecessary copies
+            buffers = memoryview(
+                shms.buf
+                ).tobytes()  # Avoid creating unnecessary copies
+            buffera = memoryview(
+                shma.buf
+                ).tobytes()  # Avoid creating unnecessary copies
             null_indexs = buffers.find(b'\x00')  # Locate the first null byte
             null_indexa = buffera.find(b'\x00')  # Locate the first null byte
             buffers = buffers[:null_indexs] if null_indexs != -1 else buffers  # Slice up to the first null byte
@@ -53,9 +73,15 @@ class memoryManager:
 
         return ""
 
-    def clean_memory(self,user_id):
+    def clean_memory(
+        self,
+        user_id
+    ):
         try:
-            shm = shared_memory.SharedMemory(name=f'shared_memory_{user_id}', create=False)
+            shm = shared_memory.SharedMemory(
+                name=f'shared_memory_{user_id}', 
+                create=False
+            )
             shm.unlink()  # Unlink the shared memory
             logger.info(f"[ MEMORY ] Successfully unlinked shared memory for user_id {user_id}.")
         except FileNotFoundError:
@@ -63,13 +89,22 @@ class memoryManager:
         except Exception as e:
             logger.error(f"[ MEMORY ] Failed to unlink shared memory for user_id {user_id}: {e}")
 
-    def shared_memory_exists(self,user_id):
+    def shared_memory_exists(
+        self,
+        user_id
+    ):
         try:
             logger.warning(f"Checking shared memory for user_id {user_id}.")
             screen_memory = f"shared_memory_screen_{user_id}"
             audio_memory = f"shared_memory_audio_{user_id}"
-            shms = shared_memory.SharedMemory(name=screen_memory, create=False)
-            shma = shared_memory.SharedMemory(name=audio_memory, create=False)
+            shms = shared_memory.SharedMemory(
+                name=screen_memory, 
+                create=False
+            )
+            shma = shared_memory.SharedMemory(
+                name=audio_memory, 
+                create=False
+            )
             shms.close()  # Close immediately if it exists
             shma.close()  # Close immediately if it exists
             logger.warning(f"[ MEMORY ] Shared memory for user_id {user_id} exists.")
