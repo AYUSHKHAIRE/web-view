@@ -7,30 +7,51 @@ from browse.views import MM
 import asyncio
 import time
 
-class WebSocketConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
+class WebSocketConsumer(
+    AsyncWebsocketConsumer
+):
+    async def connect(
+        self
+    ):
         self.room_name = self.scope["url_route"]["kwargs"]["user_id"]
         self.room_group_name = f"browse_{self.room_name}"
         self.streaming = False  # Initially not streaming
 
         # Add the channel to the group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.channel_layer.group_add(
+            self.room_group_name, 
+            self.channel_name
+        )
         await self.accept()
         logger.debug(f"Connected to WebSocket room: {self.room_group_name}")
 
-    async def disconnect(self, close_code):
+    async def disconnect(
+        self, 
+        close_code
+    ):
         self.streaming = False  # Stop streaming when the WebSocket disconnects
-
         # Remove the channel from the group
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        await self.channel_layer.group_discard(
+            self.room_group_name, 
+            self.channel_name
+        )
         logger.debug(f"Disconnected from WebSocket room: {self.room_group_name}")
 
-    async def receive(self, text_data=None, bytes_data=None):
+    async def receive(
+        self, 
+        text_data=None, 
+        bytes_data=None
+    ):
         try:
             if text_data:
-                data = json.loads(text_data)
+                data = json.loads(
+                    text_data
+                )
                 message_type = data.get("special")
-                user_id = data.get("user_id", "unknown")
+                user_id = data.get(
+                    "user_id", 
+                    "unknown"
+                )
                 if message_type == "register":
                     response = {
                         "type": "register",
@@ -72,7 +93,9 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
-                        asyncio.create_task(self.read_and_stream())
+                        asyncio.create_task(
+                            self.read_and_stream()
+                        )
                         response = {
                             "type": "info",
                             "message": "Started streaming."
@@ -116,20 +139,35 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                 "message": "Invalid JSON format."
             }
             logger.error("Received invalid JSON format.")
-            await self.send(text_data=json.dumps(error_response))
+            await self.send(
+                text_data=json.dumps(
+                    error_response
+                )
+            )
 
-    async def send_to_group(self, event):
+    async def send_to_group(
+        self, 
+        event
+    ):
         # Broadcast a message to the group
         message = event["message"]
-        await self.send(text_data=json.dumps(message))
+        await self.send(
+            text_data=json.dumps(
+                message
+            )
+        )
 
-    async def read_and_stream(self):
+    async def read_and_stream(
+        self
+    ):
         while self.streaming:
             try:
                 start_time = time.perf_counter()
                 
                 # Read from shared memory
-                screen , audio = MM.read_memory(user_id=self.room_name)
+                screen , audio = MM.read_memory(
+                    user_id=self.room_name
+                )
                 read_time = time.perf_counter()
                 
                 if screen or audio :
@@ -141,7 +179,11 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                     }
                     
                     # Send data over WebSocket
-                    await self.send(json.dumps(data_to_send))
+                    await self.send(
+                        json.dumps(
+                            data_to_send
+                        )
+                    )
                     send_time = time.perf_counter()
                     
                     # logger.debug(
@@ -149,11 +191,15 @@ class WebSocketConsumer(AsyncWebsocketConsumer):
                     # )
                 else:
                     logger.warning(f"No image data found for user {self.room_name}")
-                    flag = MM.shared_memory_exists(user_id=self.room_name)
+                    flag = MM.shared_memory_exists(
+                        user_id=self.room_name
+                    )
                     if flag == False:
                         logger.warning(f"Shared memory not found for user {self.room_name}.")
                         logger.warning(f"setting memory again for user {self.room_name}.")
-                        MM.setup_memory(user_id=self.room_name)
+                        MM.setup_memory(
+                            user_id=self.room_name
+                        )
                 
                 # Sleep
                 sleep_start = time.perf_counter()
