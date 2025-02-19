@@ -1,13 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile
-from browse.browser_manager import browserManager
 from browse.memory_manager import memoryManager
 from browse.sessionmanager import sessionManager
-from browse.internal_server_manager import WebSocketServer
 import time
 from browse.logger_config import logger
-from .internal_server_manager import WebSocketServer
 from django.http import JsonResponse
 from accessweb.settings import BASE_DIR
 import json
@@ -16,9 +13,7 @@ import os
 
 logger.debug("[ MASTER ] Initializing managers...")
 
-BM = browserManager()
 MM = memoryManager()
-WSS = WebSocketServer(port=9876)
 SSM = sessionManager()
 
 # WSS.start_in_thread()
