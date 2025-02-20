@@ -251,6 +251,19 @@ function startAsession(userid) {
     });
 }
 
+function send_chat_to_llm() {
+  // first tell to source page 
+  // let message = document.getElementById("chat").value;
+  sessionSocket.send(
+    JSON.stringify({
+      "user_id": getUserId(),
+      "special": "page_source",
+      "message": "chat"
+    })
+  )
+  console.log("sending chat to llm")
+}
+
 document.getElementById("browser_screenshot").addEventListener("click", function (event) {
   const rect = this.getBoundingClientRect(); // Get image position
   const mouseX = event.clientX - rect.left; // Mouse X relative to the image
@@ -294,6 +307,11 @@ search_button.addEventListener("click", function () {
       "special":"search"
     })
   )
+});
+
+const chat_button = document.querySelector("#ai-chat");
+chat_button.addEventListener("click", function () {
+  send_chat_to_llm();
 });
 
 // Attach event listener
