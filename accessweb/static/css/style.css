@@ -142,7 +142,7 @@ body {
 
 /* search  */
 
-.search{
+.search {
   background-color: transparent;
   border: 2px solid aliceblue;
   color: #d3d3d3;
@@ -310,7 +310,7 @@ button:hover {
 .slider {
   -webkit-appearance: none; /* Override default CSS styles */
   appearance: none;
-  width: 500px; /* Full-width */
+  width: 100%; /* Full-width */
   height: 25px; /* Specified height */
   background: #d3d3d3; /* Grey background */
   outline: none; /* Remove outline */
@@ -361,4 +361,52 @@ button:hover {
   background: transparent; /* Optional styling */
   padding: 1rem;
   border-radius: 10px;
+}
+
+/* windows  */
+.chat-box {
+  width: 450px;
+  height: 400px;
+  position: fixed;
+  bottom: 100px;
+  background: rgb(41, 41, 41);
+  border: 1px solid #4e4e4e;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  display: none;
+}
+
+.chat-header {
+  background: #0073b1;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  text-align: center;
+}
+
+.chat-content {
+  padding: 10px;
+  height: 240px;
+  overflow-y: auto;
+}
+
+.minimized {
+  height: 40px !important;
+  overflow: hidden;
+}
+
+.buttons-browse {
+  bottom: 0px;
+  position: fixed;
+}
+.interactivewindows{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.buttonhandlers{
+  display: flex;
 }
