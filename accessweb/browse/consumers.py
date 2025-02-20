@@ -90,6 +90,11 @@ class WebSocketConsumer(
                         "y": data['message']['y']
                     }
                     logger.debug(f"Saying hover to user {user_id}")
+                elif message_type == "page_source":
+                    response = {
+                        "type": "page_source"
+                    }
+                    logger.debug(f"Saying page source to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
