@@ -6,6 +6,41 @@
       <h1>Break the Barriers , {{request.user.username}} !</h1>
       <button id="startSessionButton">Start Session</button>
     </div>
+  </div>
+</div>
+<div class="searchbar">
+  <input
+    type="search"
+    name="search"
+    id="search"
+    class="search"
+    placeholder="Search or enter a URL ..."
+  />
+  <button id="search_btn" class="searchbtn">Search</button>
+</div>
+<div class="imagecon" id="imagecon">
+  <div class="img-container">
+    <img
+      id="browser_screenshot"
+      src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"
+      alt="Image will display here"
+      style="width: 100%; height: 100%"
+    />
+    <div class="lens"></div>
+  </div>
+</div>
+<!-- windows -->
+<div class="interactivewindows">
+  <div class="buttonhandlers">
+    <div class="buttons-browse">
+      <button onclick="toggleChat('lens')">Toggle Lens</button>
+      <button onclick="toggleChat('chat2')">Toggle Chat 2</button>
+      <button onclick="toggleChat('chat3')">Toggle Chat 3</button>
+      <button onclick="toggleChat('chat4')">Toggle Chat 4</button>
+    </div>
+  </div>
+  <div id="lens" class="chat-box" style="right: 10px">
+    <div class="chat-header" onclick="minimizeChat('lens')">lens</div>
     <div class="controllerscon">
       <div id="vistool">
         <h4>Visual controls</h4>
@@ -52,22 +87,39 @@
       </div>
     </div>
   </div>
-</div>
-<div class="searchbar">
-  <input type="search" name="search" id="search" class="search" placeholder="Search or enter a URL ...">
-  <button id="search_btn" class="searchbtn">Search</button>
-</div>
-<div class="imagecon" id="imagecon">
-  <div class = "img-container">
-    <img
-      id="browser_screenshot"
-      src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"
-      alt="Image will display here"
-      style="width: 100%; height: 100%"
-    />
-    <div class="lens"></div>
+  <div id="chat2" class="chat-box" style="right: 270px">
+    <div class="chat-header" onclick="minimizeChat('chat2')">Chat 2</div>
+    <div class="chat-content">This is Chat 2</div>
   </div>
-  <script src="{% static 'js/browse.js' %}"></script>
-  <script src="{% static 'js/img-zoom.js' %}"></script>
-  {% endblock content %}
+  <div id="chat3" class="chat-box" style="right: 530px">
+    <div class="chat-header" onclick="minimizeChat('chat3')">Chat 3</div>
+    <div class="chat-content">This is Chat 3</div>
+  </div>
+  <div id="chat4" class="chat-box" style="right: 790px">
+    <div class="chat-header" onclick="minimizeChat('chat4')">Chat 4</div>
+    <div class="chat-content">This is Chat 4</div>
+  </div>
 </div>
+<script src="{% static 'js/browse.js' %}"></script>
+<script src="{% static 'js/img-zoom.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+  $(function () {
+    $(".chat-box").draggable({ handle: ".chat-header" });
+  });
+
+  function toggleChat(id) {
+    let chat = document.getElementById(id);
+    chat.style.display =
+      chat.style.display === "none" || chat.style.display === ""
+        ? "block"
+        : "none";
+  }
+
+  function minimizeChat(id) {
+    let chat = document.getElementById(id);
+    chat.classList.toggle("minimized");
+  }
+</script>
+{% endblock content %}
