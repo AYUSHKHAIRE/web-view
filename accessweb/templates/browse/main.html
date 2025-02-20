@@ -34,7 +34,7 @@
   <div class="buttonhandlers">
     <div class="buttons-browse">
       <button onclick="toggleChat('lens')">Toggle Lens</button>
-      <button onclick="toggleChat('chat2')">Toggle Chat 2</button>
+      <button onclick="toggleChat('aichat')">chat with AI</button>
       <button onclick="toggleChat('chat3')">Toggle Chat 3</button>
       <button onclick="toggleChat('chat4')">Toggle Chat 4</button>
     </div>
@@ -87,9 +87,13 @@
       </div>
     </div>
   </div>
-  <div id="chat2" class="chat-box" style="right: 270px">
-    <div class="chat-header" onclick="minimizeChat('chat2')">Chat 2</div>
-    <div class="chat-content">This is Chat 2</div>
+  <div id="aichat" class="chat-box" style="right: 270px">
+    <div class="chat-header" onclick="minimizeChat('aichat')">chat with AI</div>
+    <div class="chat-content">
+      <h1>Chat with site - AI</h1>
+      <input type="text">
+      <button id="ai-chat" >Send</button>
+    </div>
   </div>
   <div id="chat3" class="chat-box" style="right: 530px">
     <div class="chat-header" onclick="minimizeChat('chat3')">Chat 3</div>
