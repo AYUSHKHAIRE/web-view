@@ -289,6 +289,14 @@ class WebSocketClient:
                 message=data
             )
             logger.warning("[ CLIENT ] hover complete .")
+        if data.get("type") == "page_source":
+            logger.info(f"[ CLIENT ] page source request for user_id: {self.user_id}")
+            logger.warning(data)
+            SM.trigger_bridge(
+                type="page_source",
+                message=data
+            )
+            logger.warning("[ CLIENT ] page source complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -369,6 +377,7 @@ class selenium_manager:
         self.driver_instruction = None
         self.driver_message = None
         self.default_url = "https://cse.google.com/cse?cx=e5856f31c6fb143cb"
+        self.source = None
     
     """
     setup selenium driver
@@ -459,6 +468,20 @@ class selenium_manager:
                 logger.debug("set up hover onn driver . hhanding over tto tread")
             except  Exception as e:
                 logger.error(f"Error in hovering driver: {e}")
+        elif type == "page_source":
+            try:
+                logger.debug("trying to set up page source onn driver")
+                self.driver_message = "page_source"
+                self.driver_instruction = message
+                logger.debug("set up page ssource onn driver . hhanding over tto tread")
+            except  Exception as e:
+                logger.error(f"Error in hovering driver: {e}")
+    
+    def set_page_source(self,driver):
+        logger.debug("setting up page source")
+        self.source = driver.page_source
+        logger.debug("page source set")
+        return driver
     
     """
     click on the driver
@@ -854,7 +877,7 @@ class selenium_manager:
                             logger.debug("wrapping up click")
                         elif self.driver_message == "search":
                             query = self.driver_instruction['qurrey']
-                            self.search_on_driver(
+                            self.driver = self.search_on_driver(
                                 driver=self.
                                 driver,
                                 query=query
@@ -865,7 +888,7 @@ class selenium_manager:
                             logger.debug("wrapping up click")
                         elif self.driver_message == "keypress":
                             key = self.driver_instruction['key']
-                            self.type_on_driver(
+                            self.driver = self.type_on_driver(
                                 driver=self.driver,
                                 key=key
                             )
@@ -876,7 +899,7 @@ class selenium_manager:
                         elif self.driver_message == "hover":
                             x = self.driver_instruction['x']
                             y = self.driver_instruction['y']
-                            self.hover_on_driver(
+                            self.driver = self.hover_on_driver(
                                 driver=self.driver,
                                 x = x,
                                 y = y
@@ -885,6 +908,14 @@ class selenium_manager:
                             self.driver_instruction = None
                             self.driver_message = None
                             logger.debug("wrapping up hover")
+                        elif self.driver_message == "page_source":
+                            self.driver = self.set_page_source(
+                                driver=self.driver,
+                            )
+                            logger.debug("page source operation complete")
+                            self.driver_instruction = None
+                            self.driver_message = None
+                            logger.debug("wrapping up page source")
                     # logger.warning("operator bypass")
                 else:
                     logger.error("driver is None")
