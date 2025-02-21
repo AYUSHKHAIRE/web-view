@@ -16,6 +16,7 @@ import asyncio
 import time
 from logger_config import logger
 from threading import RLock
+import google.generativeai as genai
 
 """
 This file have 3 parts .
@@ -925,6 +926,28 @@ class selenium_manager:
                 logger.error(f"Error capturing screenshot: {e}")
                 break
 
+class gen_ai_chat:
+    def __init__(self):
+        self.gemini_api_key = os.environ.get('GEMINI_API_KEY')
+        self.model = None
+        
+    def setup(self):
+        genai.configure(api_key=self.gemini_api_key)
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        
+    def get_response(self,query_text):
+        response = self.model.generate_content(f'{query_text}')
+        return response
+    
+    def send_response_over_socket(self, text_input):
+        response = self.get_response(text_input)  # Get AI response
+        if not response or not response.candidates:
+            logger.warning("Empty response from Gemini AI")
+            return None  # Return if no response
+        parts = response.candidates[0].content.parts  # Corrected attribute access
+        logger.warning(f"Response from GenAI: {parts}")  
+        return parts  # You can process `parts` further
+
 # Environment variables
 user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
@@ -942,6 +965,10 @@ logger.warning(f"got screen {screen_width} {screen_height}")
 logger.debug(f"Starting Docker for user: {user_id}")
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 SM = selenium_manager()
+
+GAC = gen_ai_chat()
+GAC.setup()
+GAC.send_response_over_socket("hello")
 
 """
 main function to start the websocket client and selenium driver
