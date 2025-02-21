@@ -388,7 +388,7 @@ button:hover {
 
 .chat-content {
   padding: 10px;
-  height: 240px;
+  min-height: 240px;
   overflow-y: auto;
 }
 
@@ -409,4 +409,126 @@ button:hover {
 }
 .buttonhandlers{
   display: flex;
+}
+/* Import Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+/* ChatBot Container */
+.chatBot {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1e1e1e, #343434);
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: "Poppins", sans-serif;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  bottom: 20px;
+  right: 20px;
+  width: 100%;
+  height: 500px;
+}
+
+/* Header */
+.chatBot header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Chatbox (Message Area) */
+.chatbox {
+  flex-grow: 1;
+  padding: 15px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #777 transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat Messages */
+.chat {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Incoming Messages */
+.chat-incoming {
+  align-self: flex-start;
+}
+
+.chat-incoming p {
+  background: rgba(173, 216, 230, 0.2);
+  color: white;
+}
+
+/* Chat Bubble */
+.chat p {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+/* Input Area */
+.chat-input {
+  display: flex;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  gap: 8px;
+  align-items: center;
+}
+
+/* Input Box */
+.chat-input input {
+  flex-grow: 1;
+  height: 40px;
+  padding: 0.8rem;
+  border: none;
+  outline: none;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.9rem;
+}
+
+/* Send Button */
+#ai-chat {
+  height: 40px;
+  padding: 0 14px;
+  border: none;
+  background: rgba(0, 162, 255, 0.7);
+  color: white;
+  font-size: 1rem;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+#ai-chat:hover {
+  background: rgba(0, 162, 255, 0.9);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .chatBot {
+    width: 100%;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+  }
+  .chatbox {
+    padding: 10px;
+  }
+  .chat-input {
+    padding: 10px;
+  }
 }
