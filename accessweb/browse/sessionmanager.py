@@ -86,6 +86,7 @@ class sessionManager():
                             "-e", f"CONTAINER_USER_ID={user_id}" ,
                             "-e", f"CONTAINER_USER_AUTH_TOKEN={auth_token}" ,
                             "-e", f"SCREENDEX={screendex}" ,
+                            "-e", f"GEMINI_API_KEY=AIzaSyDIe8iS1rFDUDPEL9xI87HK50Z9hL3rMj0" ,
                             DOCKER_IMAGE
                     ], 
                         stdout=subprocess.PIPE, 
