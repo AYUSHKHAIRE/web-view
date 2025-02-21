@@ -90,40 +90,56 @@
   <div id="aichat" class="chat-box" style="right: 270px">
     <div class="chat-header" onclick="minimizeChat('aichat')">chat with AI</div>
     <div class="chat-content">
-      <h1>Chat with site - AI</h1>
-      <input type="text">
-      <button id="ai-chat" >Send</button>
+      <div class="chatBot">
+        <header>
+          <h2>ChatBot</h2>
+        </header>
+        <ul class="chatbox">
+          <li class="chat-incoming chat">
+            <p>Hey! How can I assist you today?</p>
+          </li>
+        </ul>
+        <div class="chat-input">
+          <input
+            rows="0"
+            cols="17"
+            placeholder="Enter a message..."
+            class=""
+          ></input>
+          <button id="ai-chat">Start Chat</button>
+        </div>
+      </div>
+    </div>
+    <div id="chat3" class="chat-box" style="right: 530px">
+      <div class="chat-header" onclick="minimizeChat('chat3')">Chat 3</div>
+      <div class="chat-content">This is Chat 3</div>
+    </div>
+    <div id="chat4" class="chat-box" style="right: 790px">
+      <div class="chat-header" onclick="minimizeChat('chat4')">Chat 4</div>
+      <div class="chat-content">This is Chat 4</div>
     </div>
   </div>
-  <div id="chat3" class="chat-box" style="right: 530px">
-    <div class="chat-header" onclick="minimizeChat('chat3')">Chat 3</div>
-    <div class="chat-content">This is Chat 3</div>
-  </div>
-  <div id="chat4" class="chat-box" style="right: 790px">
-    <div class="chat-header" onclick="minimizeChat('chat4')">Chat 4</div>
-    <div class="chat-content">This is Chat 4</div>
-  </div>
+  <script src="{% static 'js/browse.js' %}"></script>
+  <script src="{% static 'js/img-zoom.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+    $(function () {
+      $(".chat-box").draggable({ handle: ".chat-header" });
+    });
+
+    function toggleChat(id) {
+      let chat = document.getElementById(id);
+      chat.style.display =
+        chat.style.display === "none" || chat.style.display === ""
+          ? "block"
+          : "none";
+    }
+
+    function minimizeChat(id) {
+      let chat = document.getElementById(id);
+      chat.classList.toggle("minimized");
+    }
+  </script>
+  {% endblock content %}
 </div>
-<script src="{% static 'js/browse.js' %}"></script>
-<script src="{% static 'js/img-zoom.js' %}"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script>
-  $(function () {
-    $(".chat-box").draggable({ handle: ".chat-header" });
-  });
-
-  function toggleChat(id) {
-    let chat = document.getElementById(id);
-    chat.style.display =
-      chat.style.display === "none" || chat.style.display === ""
-        ? "block"
-        : "none";
-  }
-
-  function minimizeChat(id) {
-    let chat = document.getElementById(id);
-    chat.classList.toggle("minimized");
-  }
-</script>
-{% endblock content %}
