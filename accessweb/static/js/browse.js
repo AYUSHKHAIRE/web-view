@@ -251,7 +251,7 @@ function startAsession(userid) {
     });
 }
 
-function send_chat_to_llm() {
+function send_chat_source_to_llm() {
   // first tell to source page 
   // let message = document.getElementById("chat").value;
   sessionSocket.send(
@@ -261,7 +261,9 @@ function send_chat_to_llm() {
       "message": "chat"
     })
   )
-  console.log("sending chat to llm")
+  let cb = document.querySelector("#ai-chat");
+  cb.textContent = "send";
+  console.log("sending chat source to llm")
 }
 
 document.getElementById("browser_screenshot").addEventListener("click", function (event) {
@@ -311,7 +313,7 @@ search_button.addEventListener("click", function () {
 
 const chat_button = document.querySelector("#ai-chat");
 chat_button.addEventListener("click", function () {
-  send_chat_to_llm();
+  send_chat_source_to_llm();
 });
 
 // Attach event listener
