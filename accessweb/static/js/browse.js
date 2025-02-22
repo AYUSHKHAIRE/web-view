@@ -261,6 +261,13 @@ function send_chat_source_to_llm() {
       "message": "chat"
     })
   )
+    sessionSocket.send(
+      JSON.stringify({
+        user_id: getUserId(),
+        special: "LLM_ask_a_text",
+        message: "Hello ! what is an AI ?",
+      })
+    );
   let cb = document.querySelector("#ai-chat");
   cb.textContent = "send";
   console.log("sending chat source to llm")
