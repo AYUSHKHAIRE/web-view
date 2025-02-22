@@ -47,7 +47,7 @@ class WebSocketConsumer(
                 data = json.loads(
                     text_data
                 )
-                logger.warning(data)
+                # logger.warning(data)
                 message_type = data.get("special")
                 user_id = data.get(
                     "user_id", 
@@ -102,6 +102,12 @@ class WebSocketConsumer(
                         "message":data["message"]
                     }
                     logger.debug(f"Saying send message to LLM by user {user_id}")
+                elif message_type == "LLM_response":
+                    response = {
+                        "type": "LLM_response",
+                        "message":data["message"]
+                    }
+                    logger.debug(f"Saying response by LLM to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
