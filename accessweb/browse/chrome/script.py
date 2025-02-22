@@ -298,6 +298,14 @@ class WebSocketClient:
                 message=data
             )
             logger.warning("[ CLIENT ] page source complete .")
+        if data.get("type") == "LLM_ask_a_text":
+            logger.info(f"[ CLIENT ] [ LLM ]  ask a text request for user_id: {self.user_id}")
+            logger.warning(data)
+            GAC.trigger_bridge(
+                type="LLM_ask_a_text",
+                message=data
+            )
+            logger.warning("[ CLIENT ] [ LLM ] ask a text complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -379,6 +387,9 @@ class selenium_manager:
         self.driver_message = None
         self.default_url = "https://cse.google.com/cse?cx=e5856f31c6fb143cb"
         self.source = None
+        self.llm_message_type = None
+        self.llm_message = None
+        self.llm = None
     
     """
     setup selenium driver
@@ -477,7 +488,7 @@ class selenium_manager:
                 logger.debug("set up page ssource onn driver . hhanding over tto tread")
             except  Exception as e:
                 logger.error(f"Error in hovering driver: {e}")
-    
+
     def set_page_source(self,driver):
         logger.debug("setting up page source")
         self.source = driver.page_source
@@ -930,16 +941,34 @@ class gen_ai_chat:
     def __init__(self):
         self.gemini_api_key = os.environ.get('GEMINI_API_KEY')
         self.model = None
+        self.llm_message_type = None
+        self.llm_message = None
         
     def setup(self):
         genai.configure(api_key=self.gemini_api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash')
         
+    def trigger_bridge(
+        self,
+        type, 
+        message
+    ):
+        if type == "LLM_ask_a_text":
+            try:
+                logger.debug("trying to set up text response on LLM")
+                self.llm_message_type = "ask_a_text"
+                self.llm_message = message
+                new_response = self.get_response_parts(message)
+                logger.warning(new_response)
+                logger.debug("set up text response on LLM . handing over tto tread")
+            except  Exception as e:
+                logger.error(f"Error in et up text response on LLM: {e}")
+
     def get_response(self,query_text):
         response = self.model.generate_content(f'{query_text}')
         return response
     
-    def send_response_over_socket(self, text_input):
+    def get_response_parts(self, text_input):
         response = self.get_response(text_input)  # Get AI response
         if not response or not response.candidates:
             logger.warning("Empty response from Gemini AI")
@@ -968,7 +997,6 @@ SM = selenium_manager()
 
 GAC = gen_ai_chat()
 GAC.setup()
-GAC.send_response_over_socket("hello")
 
 """
 main function to start the websocket client and selenium driver
