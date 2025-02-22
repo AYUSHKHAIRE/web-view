@@ -78,11 +78,17 @@ class memoryManager:
         user_id
     ):
         try:
-            shm = shared_memory.SharedMemory(
-                name=f'shared_memory_{user_id}', 
+            shms = shared_memory.SharedMemory(
+                name=f'shared_memory_screen_{user_id}', 
                 create=False
             )
-            shm.unlink()  # Unlink the shared memory
+            shma = shared_memory.SharedMemory(
+                name=f'shared_memory_audio_{user_id}', 
+                create=False
+            )
+            shms.unlink()  
+            shma.unlink()  # Unlink the shared memory
+            # Unlink the shared memory
             logger.info(f"[ MEMORY ] Successfully unlinked shared memory for user_id {user_id}.")
         except FileNotFoundError:
             logger.warning(f"[ MEMORY ] Shared memory for user_id {user_id} not found during cleanup.")
