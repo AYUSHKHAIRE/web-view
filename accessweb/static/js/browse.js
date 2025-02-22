@@ -189,7 +189,7 @@ sessionSocket.onmessage = async (event) => {
           try {
             let audioArray = data.audio.split(",").map(Number);
             if (Array.isArray(audioArray)) {
-              playFrequencies(audioArray);
+              // playFrequencies(audioArray);
             } else {
               console.error("Audio data is not an array:", audioArray);
             }
@@ -197,8 +197,12 @@ sessionSocket.onmessage = async (event) => {
             console.error("Failed to parse audio JSON:", error);
           }
         }
-      } else {
-        console.warn("Unknown message type or missing data:", data);
+      }
+      else if (data.type === "LLM_response") {
+        console.log(data);
+      }
+      else {
+        console.warn("Unknown message type or missing data:",data);
       }
     } else {
       console.warn("Unknown WebSocket message type:", typeof event.data);
