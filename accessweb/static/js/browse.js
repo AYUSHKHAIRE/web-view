@@ -200,6 +200,7 @@ sessionSocket.onmessage = async (event) => {
       }
       else if (data.type === "LLM_response") {
         console.log(data);
+        display_LLM_response(data)
       }
       else {
         console.warn("Unknown message type or missing data:",data);
@@ -269,7 +270,7 @@ function send_chat_source_to_llm() {
       JSON.stringify({
         user_id: getUserId(),
         special: "LLM_ask_a_text",
-        message: "Hello ! what is an AI ?",
+        message: "write a sample code in html css js",
       })
     );
   let cb = document.querySelector("#ai-chat");
@@ -309,6 +310,40 @@ function detect_pressed_key() {
   })
 }
 
+function display_LLM_response(data) {
+  let llmcon = document.getElementById("LLM-conversation");
+
+  let messagesArray;
+  try {
+    messagesArray = JSON.parse(data.message);
+  } catch (error) {
+    console.error("Failed to parse message:", error, "Original:", data.message);
+    return;
+  }
+
+  // Create a single chat container
+  let reply_container = document.createElement("div");
+  reply_container.classList.add("incoming-chat", "chat");
+
+  // Convert and append each message properly
+  messagesArray.forEach((textObj) => {
+    if (!textObj.text) return; // Skip if 'text' is missing
+
+    let rawHTML = marked.parse(textObj.text); // Convert Markdown to HTML
+    reply_container.innerHTML += rawHTML + "<br>"; // Add spacing
+  });
+
+  llmcon.appendChild(reply_container); // Append to chat UI
+
+  // Apply syntax highlighting for code blocks
+  document.querySelectorAll("pre code").forEach((block) => {
+    hljs.highlightElement(block);
+  });
+
+  console.log("All LLM responses displayed with Markdown & code highlighting.");
+}
+
+
 // Attach event listener
 const search_button = document.querySelector("#search_btn");
 search_button.addEventListener("click", function () {
@@ -336,3 +371,4 @@ button.addEventListener("click", function () {
 
 detect_pressed_key();
 fetchCookie();
+
