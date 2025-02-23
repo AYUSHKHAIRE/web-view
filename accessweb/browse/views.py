@@ -18,21 +18,23 @@ SSM = sessionManager()
 
 # WSS.start_in_thread()
 
-@login_required
-def index(
-    request
-):
-    user_id = UserProfile.objects.get(
-        user = request.user.id
-    ).uuid
-    return render(
-        request,
-        "browse/main.html", 
-        {
-            'user_id': user_id
-        }
-    )
+def index(request):
+    if request.user.is_authenticated:
+        try:
+            user_id = UserProfile.objects.get(
+                user=request.user
+            ).uuid
+        except UserProfile.DoesNotExist:
+            user_id = None  # Handle missing user profile case
+        return render(
+            request, 
+            "browse/main.html", 
+            {
+                "user_id": user_id
+            }
+        )
 
+    return render(request, "browse/main.html")  # Anonymous users get a basic page
 @login_required
 def getCookie(
     request
