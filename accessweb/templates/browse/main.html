@@ -4,10 +4,20 @@
   <div class="maincontainer">
     <div class="container">
       <h1>Break the Barriers , {{request.user.username}} !</h1>
+      
+      {% if user.is_authenticated %}
       <button id="startSessionButton">Start Session</button>
+      {% else %}
+      <a href="{% url 'login' %}">
+    <button id="loginButton">Login</button>
+    </a>
+      {% endif %}
     </div>
   </div>
 </div>
+
+
+{% if user.is_authenticated %}  
 <div class="searchbar">
   <input
     type="search"
@@ -94,7 +104,7 @@
         <header>
           <h2>ChatBot</h2>
         </header>
-        <ul class="chatbox">
+        <ul class="chatbox" id="LLM-conversation">
           <li class="chat-incoming chat">
             <p>Hey! How can I assist you today?</p>
           </li>
@@ -123,6 +133,9 @@
   <script src="{% static 'js/img-zoom.js' %}"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
   <script>
     $(function () {
       $(".chat-box").draggable({ handle: ".chat-header" });
@@ -141,5 +154,7 @@
       chat.classList.toggle("minimized");
     }
   </script>
-  {% endblock content %}
 </div>
+{% endif %}
+  
+{% endblock content %}
