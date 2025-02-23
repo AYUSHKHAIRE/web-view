@@ -953,6 +953,7 @@ class GenAIChat:
         try:
             query_text = query_text["message"]
             response = self.model.generate_content(query_text)
+            logger.debug(f"original response {response}")
             return response
         except Exception as e:
             logger.error(f"Error fetching response from Gemini AI: {e}")
@@ -961,21 +962,28 @@ class GenAIChat:
     def get_response_parts(self, text_input):
         """ Extracts and returns the content parts from the Gemini AI response. """
         response = self.get_response(text_input)
-        # logger.warning(f"generated response {response}")
+
         if response is None:
             return []
 
-        # logger.warning(f"Raw response: {response}")
-
         try:
             if response.candidates and hasattr(response.candidates[0], 'content'):
-                return response.candidates[0].content.parts if hasattr(response.candidates[0].content, 'parts') else []
+                content_parts = (
+                    response.candidates[0].content.parts
+                    if hasattr(response.candidates[0].content, 'parts')
+                    else []
+                )
+
+                # ✅ Ensure response is properly formatted
+                logger.debug(f"parsed part appended in the list {content_parts}")
+                return [{"text": part.text} for part in content_parts]
             else:
                 logger.error("Invalid response format: Missing 'content' or 'parts'")
                 return []
         except (KeyError, IndexError, AttributeError) as e:
             logger.error(f"Error extracting response parts: {e}")
             return []
+
 
     async def trigger_bridge(self, type, message):
         """Handles different LLM requests and sends responses via WebSocket."""
@@ -986,20 +994,14 @@ class GenAIChat:
                 self.llm_message = message
                 new_response = self.get_response_parts(message)
 
-                # Convert to a pure string using a separator (e.g., '|', ' ', '\n')
-                separator = '|'  # Choose your separator
-                if isinstance(new_response, list):  # If it's a list, join with separator
-                    new_response = separator.join(map(str, new_response))
-                elif not isinstance(new_response, str):  # Convert non-string objects
-                    new_response = str(new_response)
+                # ✅ Ensure the response is properly formatted as JSON
+                new_response_json = json.dumps(new_response, ensure_ascii=False)  # Converts list of dicts to JSON string
 
-                # logger.warning(new_response)
-
-                await WS_CLIENT.send_message(type="LLM_response", message=new_response)
+                await WS_CLIENT.send_message(type="LLM_response", message=new_response_json)
                 logger.debug("Set up text response on LLM, handing over to thread")
             except Exception as e:
                 logger.error(f"Error in setting up text response on LLM: {e}")
-
+                
 # Environment variables
 user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
