@@ -365,8 +365,8 @@ button:hover {
 
 /* windows  */
 .chat-box {
-  width: 450px;
-  height: 400px;
+  min-width: 450px;
+  min-height: 400px;
   position: fixed;
   bottom: 100px;
   background: rgb(41, 41, 41);
@@ -469,13 +469,17 @@ button:hover {
 }
 
 /* Chat Bubble */
-.chat p {
+.chat {
   max-width: 80%;
   padding: 10px 14px;
   border-radius: 16px;
   font-size: 0.9rem;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  overflow: scroll;
 }
 
 /* Input Area */
