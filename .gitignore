@@ -1,7 +1,6 @@
-/selenium_capture/seenv
-/selenium_capture/masterenv
-/selenium_capture/__pycache__
-/selenium_capture/docker_containers
-/accessweb/browse/docker_containers
 /djenv
+
 /accessweb/db.sqlite3
+
+/accessweb/browse/docker_containers
+/accessweb/browse/chrome/credscloud.json
