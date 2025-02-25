@@ -20,4 +20,5 @@ webdriver-manager==4.0.2
 websocket-client==1.8.0
 websockets==14.1
 wsproto==1.2.0
-google-generativeai==0.5.2
+google-genai==1.2.0
+google-cloud-vision==3.10.0
