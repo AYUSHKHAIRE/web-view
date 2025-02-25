@@ -16,7 +16,12 @@ import asyncio
 import time
 from logger_config import logger
 from threading import RLock
-import google.generativeai as genai
+from google import genai
+from google.genai import types 
+from google.genai.types import HttpOptions
+from google.cloud import vision
+import base64
+from multiprocessing.shared_memory import SharedMemory
 
 """
 This file have 3 parts .
@@ -306,6 +311,14 @@ class WebSocketClient:
                 message=data
             )
             logger.warning("[ CLIENT ] [ LLM ] ask a text complete .")
+        if data.get("type") == "vision_ask_a_vision":
+            logger.info(f"[ CLIENT ] [ VISION ]  VISION request for user_id: {self.user_id}")
+            logger.warning(data)
+            await VA.trigger_bridge(
+                type="vision_ask_a_vision",
+                message=data
+            )
+            logger.warning("[ CLIENT ] [ VISION ] ask a vision complete .")
         elif data.get("type") == "hello":
             logger.info(f"[ CLIENT ] Server says: {data['message']}")
 
@@ -937,71 +950,135 @@ class selenium_manager:
                 logger.error(f"Error capturing screenshot: {e}")
                 break
 
+
 class GenAIChat:
     def __init__(self):
+        """Initialize the GenAIChat class."""
         self.gemini_api_key = os.environ.get('GEMINI_API_KEY')
-        self.model = None
-        self.llm_message_type = None
-        self.llm_message = None
+        self.client = genai.Client(
+            api_key=self.gemini_api_key,
+            http_options=HttpOptions(api_version="v1")
+            )
 
-    def setup(self):
-        genai.configure(api_key=self.gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
-
+    def get_browser_image(self):
+        """Retrieve image from shared memory and encode it as Base64."""
+        try:
+            shms = SharedMemory(name=f'shared_memory_screen_{user_id}', create=False)
+            buffers = memoryview(shms.buf).tobytes()
+            null_index = buffers.find(b'\x00')  
+            buffers = buffers[:null_index] if null_index != -1 else buffers  # Trim null bytes
+            
+            return base64.b64encode(buffers).decode('utf-8')  # Encode as Base64 string
+        except Exception as e:
+            logger.error(f"Error retrieving browser image: {e}")
+            return None
+    
     def get_response(self, query_text):
-        """ Fetch response from Gemini AI asynchronously. """
+        """Fetch response from Gemini AI."""
         try:
             query_text = query_text["message"]
-            response = self.model.generate_content(query_text)
-            logger.debug(f"original response {response}")
-            return response
+            base64_image = self.get_browser_image()
+            
+            if base64_image is None:
+                logger.error("No image data available")
+                return None
+            
+            # Prepare content for Gemini API
+            contents = [
+                genai.types.Content(
+                    parts=[genai.types.Part(text=query_text)]
+                ),
+                genai.types.Content(
+            parts=[genai.types.Part(
+                inline_data=genai.types.Blob(
+                    mime_type="image/png",
+                    data=base64_image  # Keep it encoded
+                )
+            )]
+        )]
+
+            response = self.client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=contents
+            )
+            
+            logger.debug(f"Original response: {response}")
+            return response.text if hasattr(response, 'text') else None
         except Exception as e:
             logger.error(f"Error fetching response from Gemini AI: {e}")
             return None
-
-    def get_response_parts(self, text_input):
-        """ Extracts and returns the content parts from the Gemini AI response. """
-        response = self.get_response(text_input)
-
-        if response is None:
-            return []
-
-        try:
-            if response.candidates and hasattr(response.candidates[0], 'content'):
-                content_parts = (
-                    response.candidates[0].content.parts
-                    if hasattr(response.candidates[0].content, 'parts')
-                    else []
-                )
-
-                # ✅ Ensure response is properly formatted
-                logger.debug(f"parsed part appended in the list {content_parts}")
-                return [{"text": part.text} for part in content_parts]
-            else:
-                logger.error("Invalid response format: Missing 'content' or 'parts'")
-                return []
-        except (KeyError, IndexError, AttributeError) as e:
-            logger.error(f"Error extracting response parts: {e}")
-            return []
-
-
+        
     async def trigger_bridge(self, type, message):
         """Handles different LLM requests and sends responses via WebSocket."""
         if type == "LLM_ask_a_text":
             try:
                 logger.debug("Trying to set up text response on LLM")
-                self.llm_message_type = "LLM_ask_a_text"
-                self.llm_message = message
-                new_response = self.get_response_parts(message)
-
-                # ✅ Ensure the response is properly formatted as JSON
-                new_response_json = json.dumps(new_response, ensure_ascii=False)  # Converts list of dicts to JSON string
+                new_response = self.get_response(message)
+                new_response_json = json.dumps({"text": new_response}, ensure_ascii=False)
 
                 await WS_CLIENT.send_message(type="LLM_response", message=new_response_json)
                 logger.debug("Set up text response on LLM, handing over to thread")
             except Exception as e:
                 logger.error(f"Error in setting up text response on LLM: {e}")
-                
+            
+class visionApi:
+    def __init__(self,file_path):
+        self.client = vision.ImageAnnotatorClient.from_service_account_file(file_path)
+        
+    def get_screenshot_content(self):
+        try:
+            shms = SharedMemory(name=f'shared_memory_screen_{user_id}', create=False)
+            buffers = memoryview(shms.buf).tobytes()
+            null_index = buffers.find(b'\x00')
+            buffers = buffers[:null_index] if null_index != -1 else buffers  
+            base64_string = buffers.decode("utf-8")  # Convert bytes to string
+            image_bytes = base64.b64decode(base64_string)  # Convert base64 string to bytes
+            return image_bytes  # Return raw image bytes
+        except Exception as e:
+            print(f"Error in get_screenshot_content: {e}")
+            return None
+        
+    def get_info_for_img(self):
+        content = self.get_screenshot_content()
+        image = vision.Image(content = content)
+        lb_response = self.client.label_detection(image = image)
+        tx_response  = self.client.text_detection(image = image)
+        # logger.warning(lb_response)
+        # logger.warning(tx_response)
+        labels = [
+            {
+                "description": label.description,
+                "confidence": label.score,
+            }
+            for label in lb_response.label_annotations
+        ]
+        texts = [
+            {
+                "text": text.description,
+                "bounding_box": [
+                    {"x": vertex.x, "y": vertex.y} for vertex in text.bounding_poly.vertices
+                ],
+            }
+            for text in tx_response.text_annotations
+        ]
+        return  labels, texts
+
+    async def trigger_bridge(self, type, message):
+        """Handles different vision requests and sends responses via WebSocket."""
+        if type == "vision_ask_a_vision":
+            try:
+                logger.debug("Trying to set up vision response on vision api")
+                label_resp , text_resp = self.get_info_for_img()
+                new_response_json = json.dumps(
+                    {
+                        "label": label_resp,
+                        "text": text_resp
+                    }, ensure_ascii=False)
+                await WS_CLIENT.send_message(type="vision_response", message=new_response_json)
+                logger.debug("Set up vision response, handing over to thread")
+            except Exception as e:
+                logger.error(f"Error in setting up vision response: {e}")
+    
 # Environment variables
 user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
@@ -1022,13 +1099,14 @@ SM = selenium_manager()
 
 GAC = GenAIChat()
 
+VA = visionApi(file_path="credscloud.json")
+
 WS_CLIENT = WebSocketClient(
         uri=websocket_uri, 
         user_id=user_id, 
         auth_token=auth_token
 )
     
-GAC.setup()
 
 """
 main function to start the websocket client and selenium driver
