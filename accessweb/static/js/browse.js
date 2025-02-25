@@ -106,7 +106,7 @@ function displayimage(imagestr) {
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playFrequencies(frequencies, duration = 0.5) {
   let startTime = audioCtx.currentTime;
- console.log("playing batch")
+  console.log("playing batch");
   function playNext(index) {
     if (index >= frequencies.length) return; // Stop if all frequencies are played
 
@@ -134,11 +134,10 @@ function playFrequencies(frequencies, duration = 0.5) {
   playNext(0); // Start playing the first frequency
 }
 
-
 function getScreen() {
   let imageContainer = document.getElementById("imagecon");
   let computedStyle = window.getComputedStyle(imageContainer);
-  return `${computedStyle.width}X${computedStyle.height}`
+  return `${computedStyle.width}X${computedStyle.height}`;
 }
 
 function estabilish_socket(user_id) {
@@ -168,51 +167,55 @@ function estabilish_socket(user_id) {
     }, 1000);
     button.textContent = "connected socket .";
   };
-sessionSocket.onmessage = async (event) => {
-  try {
-    if (typeof event.data === "string") {
-      let trimmedData = event.data.trim();
+  sessionSocket.onmessage = async (event) => {
+    try {
+      if (typeof event.data === "string") {
+        let trimmedData = event.data.trim();
 
-      // Check if it starts and ends correctly
-      if (!(trimmedData.startsWith("{") && trimmedData.endsWith("}"))) {
-        console.error("Invalid JSON format:", trimmedData);
-        return;
-      }
-
-      // Attempt to parse
-      const data = JSON.parse(trimmedData);
-
-      if (data.type === "i" && data.screen || data.audio) {
-        displayimage(data.screen);
-
-        if (typeof data.audio === "string") {
-          try {
-            let audioArray = data.audio.split(",").map(Number);
-            if (Array.isArray(audioArray)) {
-              // playFrequencies(audioArray);
-            } else {
-              console.error("Audio data is not an array:", audioArray);
-            }
-          } catch (error) {
-            console.error("Failed to parse audio JSON:", error);
-          }
+        // Check if it starts and ends correctly
+        if (!(trimmedData.startsWith("{") && trimmedData.endsWith("}"))) {
+          console.error("Invalid JSON format:", trimmedData);
+          return;
         }
-      }
-      else if (data.type === "LLM_response") {
-        console.log(data);
-        display_LLM_response(data)
-      }
-      else {
-        console.warn("Unknown message type or missing data:",data);
-      }
-    } else {
-      console.warn("Unknown WebSocket message type:", typeof event.data);
-    }
-  } catch (err) {
-    console.error("Failed to handle WebSocket message:", err);
-  }
-};
 
+        // Attempt to parse
+        const data = JSON.parse(trimmedData);
+
+        if ((data.type === "i" && data.screen) || data.audio) {
+          displayimage(data.screen);
+
+          if (typeof data.audio === "string") {
+            try {
+              let audioArray = data.audio.split(",").map(Number);
+              if (Array.isArray(audioArray)) {
+                // playFrequencies(audioArray);
+              } else {
+                console.error("Audio data is not an array:", audioArray);
+              }
+            } catch (error) {
+              console.error("Failed to parse audio JSON:", error);
+            }
+          }
+        } else if (data.type === "LLM_response") {
+          console.log(data);
+          display_LLM_response(data);
+        } else if (data.type === "vision_response") {
+          console.log(data);
+          highlightTextOnImage(
+            data.message,
+            "browser_screenshot",
+            "imagehighlightoverlay"
+          );
+        } else {
+          console.warn("Unknown message type or missing data:", data);
+        }
+      } else {
+        console.warn("Unknown WebSocket message type:", typeof event.data);
+      }
+    } catch (err) {
+      console.error("Failed to handle WebSocket message:", err);
+    }
+  };
 
   sessionSocket.onerror = (error) => {
     console.error("WebSocket encountered an error:", error);
@@ -227,7 +230,7 @@ sessionSocket.onmessage = async (event) => {
 
 function startAsession(userid) {
   console.log("Starting the session for user:", userid);
-  let screendex = getScreen()
+  let screendex = getScreen();
   const url = `${window.location.origin}/browse/start_session/${userid}/${screendex}/`;
   fetch(url)
     .then((response) => {
@@ -257,43 +260,46 @@ function startAsession(userid) {
 }
 
 function send_chat_source_to_llm() {
-  // first tell to source page 
+  // first tell to source page
   // let message = document.getElementById("chat").value;
   sessionSocket.send(
     JSON.stringify({
-      "user_id": getUserId(),
-      "special": "page_source",
-      "message": "chat"
+      user_id: getUserId(),
+      special: "page_source",
+      message: "chat",
     })
-  )
-    sessionSocket.send(
-      JSON.stringify({
-        user_id: getUserId(),
-        special: "LLM_ask_a_text",
-        message: "write a sample code in html css js",
-      })
-    );
+  );
+  sessionSocket.send(
+    JSON.stringify({
+      user_id: getUserId(),
+      special: "LLM_ask_a_text",
+      message:
+        "can you see this string encoded base64image ? hat is inside it ? do not return image , just a 10 line stateent discribing image . tell what is tex twrote in image in 5 lines .do not return image string , just explain in plain text what is text inside . ",
+    })
+  );
   let cb = document.querySelector("#ai-chat");
   cb.textContent = "send";
-  console.log("sending chat source to llm")
+  console.log("sending chat source to llm");
 }
 
-document.getElementById("browser_screenshot").addEventListener("click", function (event) {
-  const rect = this.getBoundingClientRect(); // Get image position
-  const mouseX = event.clientX - rect.left; // Mouse X relative to the image
-  const mouseY = event.clientY - rect.top; // Mouse Y relative to the image
-  console.log("Clicked at relative coordinates (X, Y):", mouseX, mouseY);
-  console.log("calling click event")
-  const message = {
-    user_id: getUserId(),
-    special: "click_on_driver",
-    message: {
-      x: mouseX,
-      y: mouseY,
-    },
-  };
-  sessionSocket.send(JSON.stringify(message));
-});
+document
+  .getElementById("browser_screenshot")
+  .addEventListener("click", function (event) {
+    const rect = this.getBoundingClientRect(); // Get image position
+    const mouseX = event.clientX - rect.left; // Mouse X relative to the image
+    const mouseY = event.clientY - rect.top; // Mouse Y relative to the image
+    console.log("Clicked at relative coordinates (X, Y):", mouseX, mouseY);
+    console.log("calling click event");
+    const message = {
+      user_id: getUserId(),
+      special: "click_on_driver",
+      message: {
+        x: mouseX,
+        y: mouseY,
+      },
+    };
+    sessionSocket.send(JSON.stringify(message));
+  });
 
 function detect_pressed_key() {
   document.addEventListener("keypress", () => {
@@ -303,11 +309,11 @@ function detect_pressed_key() {
       user_id: getUserId(),
       special: "keypress",
       message: {
-        key: key
+        key: key,
       },
     };
     sessionSocket.send(JSON.stringify(message));
-  })
+  });
 }
 
 function display_LLM_response(data) {
@@ -343,23 +349,134 @@ function display_LLM_response(data) {
   console.log("All LLM responses displayed with Markdown & code highlighting.");
 }
 
+function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
+  console.log("Received textData (raw):", textData); // Debugging log
+  const imageElement = document.getElementById(imageid); // Your image
+  const overlayElement = document.getElementById(overlayimagehighlightid); // A div that sits over the image
+
+  // ✅ Parse JSON if it's a string
+  try {
+    if (typeof textData === "string") {
+      textData = JSON.parse(textData);
+      console.log("Parsed textData:", textData);
+    }
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return;
+  }
+
+  // ✅ Ensure textData is valid
+  if (
+    !textData ||
+    typeof textData !== "object" ||
+    !Array.isArray(textData.text)
+  ) {
+    console.error("Error: textData is invalid.", textData);
+    return;
+  }
+
+  // ✅ Get image dimensions
+  const imgWidth = imageElement.naturalWidth;
+  const imgHeight = imageElement.naturalHeight;
+  const displayWidth = imageElement.clientWidth;
+  const displayHeight = imageElement.clientHeight;
+
+  console.log("Image dimensions:", imgWidth, imgHeight);
+  console.log("Displayed size:", displayWidth, displayHeight);
+
+  // ✅ Scaling factors
+  const scaleX = displayWidth / imgWidth;
+  const scaleY = displayHeight / imgHeight;
+
+  console.log("Scale factors:", scaleX, scaleY);
+
+  // ✅ Clear previous highlights
+  overlayElement.innerHTML = "";
+
+  // ✅ Draw boxes
+  textData.text.forEach((item) => {
+    const bbox = item.bounding_box;
+
+    if (bbox.length !== 4) return;
+
+    // Get bounding box coordinates
+    const x1 = bbox[0].x * scaleX;
+    const y1 = bbox[0].y * scaleY;
+    const x2 = bbox[2].x * scaleX;
+    const y2 = bbox[2].y * scaleY;
+
+    const width = x2 - x1;
+    const height = y2 - y1;
+
+    console.log(
+      `Highlighting "${item.text}" at (${x1}, ${y1}, ${width}, ${height})`
+    );
+
+    // ✅ Create box
+    const highlightBox = document.createElement("div");
+    highlightBox.style.position = "absolute";
+    highlightBox.style.left = `${x1}px`;
+    highlightBox.style.top = `${y1}px`;
+    highlightBox.style.width = `${width}px`;
+    highlightBox.style.height = `${height}px`;
+    highlightBox.style.border = "2px solid red";
+    highlightBox.style.backgroundColor = "rgba(255, 0, 0, 0.3)"; // Semi-transparent red
+    highlightBox.style.pointerEvents = "none";
+
+    overlayElement.appendChild(highlightBox);
+  });
+}
+
+let max_highlight = 5
+function send_request_for_highlight() {
+  console.log("sending request for highlight");
+  const highlight_con = document.getElementById("imagehighlightoverlay");
+  const highlight_button = document.getElementById("highlight-chat-button");
+  if (highlight_con.style.display === "none") {
+    if (max_highlight > 0) {
+      max_highlight -= 1;
+      highlight_con.style.display = "block";
+      sessionSocket.send(
+        JSON.stringify({
+          user_id: getUserId(),
+          special: "vision_ask_a_vision",
+          message:
+            "can you see this string encoded base64image ? hat is inside it ? do not return image , just a 10 line stateent discribing image . tell what is tex twrote in image in 5 lines .do not return image string , just explain in plain text what is text inside . ",
+        })
+      );
+      highlight_button.textContent = "remove highlight";
+    }
+    else {
+      highlight_con.style.display = "block";
+      highlight_button.textContent = "limit over . cannot highlight more .";
+    }
+  } else {
+    highlight_con.style.display = "None";
+    highlight_button.textContent = "show highlight";
+  }
+}
 
 // Attach event listener
 const search_button = document.querySelector("#search_btn");
 search_button.addEventListener("click", function () {
-  let querry = document.getElementById("search").value
+  let querry = document.getElementById("search").value;
   sessionSocket.send(
     JSON.stringify({
-      "user_id": getUserId(),
-      "querry": querry,
-      "special":"search"
+      user_id: getUserId(),
+      querry: querry,
+      special: "search",
     })
-  )
+  );
 });
 
 const chat_button = document.querySelector("#ai-chat");
 chat_button.addEventListener("click", function () {
   send_chat_source_to_llm();
+});
+
+const hi_button = document.querySelector("#highlight-chat-button");
+hi_button.addEventListener("click", function () {
+  send_request_for_highlight();
 });
 
 // Attach event listener
@@ -371,4 +488,3 @@ button.addEventListener("click", function () {
 
 detect_pressed_key();
 fetchCookie();
-
