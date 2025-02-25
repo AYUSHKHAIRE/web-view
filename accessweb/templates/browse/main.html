@@ -36,6 +36,7 @@
       alt="Image will display here"
       style="width: 100%; height: 100%"
     />
+    <div  style="display: none;" class="imagehighlightoverlay" id="imagehighlightoverlay"></div>
     <div class="lens"></div>
   </div>
 </div>
@@ -45,7 +46,7 @@
     <div class="buttons-browse">
       <button onclick="toggleChat('lens')">Toggle Lens</button>
       <button onclick="toggleChat('aichat')">chat with AI</button>
-      <button onclick="toggleChat('chat3')">Toggle Chat 3</button>
+      <button onclick="toggleChat('highlight-chat-box')">Highlight text</button>
       <button onclick="toggleChat('chat4')">Toggle Chat 4</button>
     </div>
   </div>
@@ -120,9 +121,10 @@
         </div>
       </div>
     </div>
-    <div id="chat3" class="chat-box" style="right: 530px">
-      <div class="chat-header" onclick="minimizeChat('chat3')">Chat 3</div>
-      <div class="chat-content">This is Chat 3</div>
+    <div id="highlight-chat-box" class="chat-box" style="right: 530px">
+      <div class="chat-header" onclick="minimizeChat('highlight-chat-box')">Highlight text</div>
+      <div class="chat-content">highlight the text</div>
+      <button id="highlight-chat-button" class="highlight-chat-button">highlight</button>
     </div>
     <div id="chat4" class="chat-box" style="right: 790px">
       <div class="chat-header" onclick="minimizeChat('chat4')">Chat 4</div>
