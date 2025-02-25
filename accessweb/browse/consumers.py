@@ -108,6 +108,18 @@ class WebSocketConsumer(
                         "message":data["message"]
                     }
                     logger.debug(f"Saying response by LLM to user {user_id}")
+                elif message_type == "vision_ask_a_vision":
+                    response = {
+                        "type": "vision_ask_a_vision",
+                        "message":data["message"]
+                    }
+                    logger.debug(f"Saying send message to vision api by user {user_id}")
+                elif message_type == "vision_response":
+                    response = {
+                        "type": "vision_response",
+                        "message":data["message"]
+                    }
+                    logger.debug(f"Saying response by vision to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
