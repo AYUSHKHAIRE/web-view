@@ -22,6 +22,7 @@ from google.genai.types import HttpOptions
 from google.cloud import vision
 import base64
 from multiprocessing.shared_memory import SharedMemory
+from bs4 import BeautifulSoup
 
 """
 This file have 3 parts .
@@ -508,6 +509,40 @@ class selenium_manager:
         logger.debug("page source set")
         return driver
     
+    def parse_page_source(self):
+        logger.info("Processing page source")
+        source = self.source
+        soup = BeautifulSoup(source, "html.parser")
+
+        data = {
+            'links': [],
+            'inputs': [],
+            'buttons': []
+        }
+
+        for element in soup.find_all(['button', 'input', 'a']):
+            match element.name:
+                case 'button':
+                    data['buttons'].append({
+                        'text': element.get_text(strip=True) or "Unnamed Button",
+                    })
+
+                case 'input':
+                    data['inputs'].append({
+                        'name': element.get('name', 'unknown'),
+                        'type': element.get('type', 'text'),
+                        'placeholder': element.get('placeholder', '')
+                    })
+
+                case 'a':
+                    link_text = element.get_text(strip=True)
+                    if link_text:  # Only add if text exists
+                        data['links'].append({'text': link_text})
+
+        logger.info("Processed page source")
+        logger.info(data)
+        return data
+
     """
     click on the driver
     input:
@@ -950,77 +985,84 @@ class selenium_manager:
                 logger.error(f"Error capturing screenshot: {e}")
                 break
 
+class GeminiAPIClient:
+    def __init__(self, api_key):
+        self.client = genai.Client(api_key=api_key)
+        self.model = "gemini-2.0-flash"
 
-class GenAIChat:
-    def __init__(self):
-        """Initialize the GenAIChat class."""
-        self.gemini_api_key = os.environ.get('GEMINI_API_KEY')
-        self.client = genai.Client(
-            api_key=self.gemini_api_key,
-            http_options=HttpOptions(api_version="v1")
+    def generate(self, user_input):
+        contents = [
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(text=user_input),
+                ],
             )
+        ]
 
-    def get_browser_image(self):
-        """Retrieve image from shared memory and encode it as Base64."""
-        try:
-            shms = SharedMemory(name=f'shared_memory_screen_{user_id}', create=False)
-            buffers = memoryview(shms.buf).tobytes()
-            null_index = buffers.find(b'\x00')  
-            buffers = buffers[:null_index] if null_index != -1 else buffers  # Trim null bytes
-            
-            return base64.b64encode(buffers).decode('utf-8')  # Encode as Base64 string
-        except Exception as e:
-            logger.error(f"Error retrieving browser image: {e}")
-            return None
-    
-    def get_response(self, query_text):
-        """Fetch response from Gemini AI."""
-        try:
-            query_text = query_text["message"]
-            base64_image = self.get_browser_image()
-            
-            if base64_image is None:
-                logger.error("No image data available")
-                return None
-            
-            # Prepare content for Gemini API
-            contents = [
-                genai.types.Content(
-                    parts=[genai.types.Part(text=query_text)]
+        generate_content_config = types.GenerateContentConfig(
+            temperature=2,
+            top_p=0.95,
+            top_k=40,
+            max_output_tokens=8192,
+            response_mime_type="application/json",
+            system_instruction=[
+                types.Part.from_text(
+                    text="""  
+You are assisting a person with low vision in navigating the internet.  
+Your task is to analyze the provided prompt and determine whether it is:  
+1. A **general query** that requires a normal response.  
+2. An **action request**, which can be one of the following types:  
+   - **Click**: The user wants to click on a specific element.  
+   - **Fill**: The user wants to enter text into an input field.  
+   - **Hover**: The user wants to hover over an element for additional information.  
+
+If the prompt indicates an action, you will receive an **information section** containing elements and their coordinates.  
+Your response must extract the relevant element and return it in the following format:  
+
+accessweb action element_text coordinates remark
+in as a JSON response
+
+### Information Section:  
+{"get started for free": {"x": 122, "y": 200}},  
+{"signup": {"x": 22, "y": 20}}  
+
+If no action is detected, simply return a normal response.  
+Ensure your output is structured, concise, and relevant to the given prompt.  
+"""  
                 ),
-                genai.types.Content(
-            parts=[genai.types.Part(
-                inline_data=genai.types.Blob(
-                    mime_type="image/png",
-                    data=base64_image  # Keep it encoded
-                )
-            )]
-        )]
+            ],
+        )
 
-            response = self.client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=contents
-            )
-            
-            logger.debug(f"Original response: {response}")
-            return response.text if hasattr(response, 'text') else None
-        except Exception as e:
-            logger.error(f"Error fetching response from Gemini AI: {e}")
-            return None
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=generate_content_config,
+        )
         
+        return response.text
+            
     async def trigger_bridge(self, type, message):
-        """Handles different LLM requests and sends responses via WebSocket."""
+        """Handles different gemini requests and sends responses via WebSocket."""
         if type == "LLM_ask_a_text":
             try:
-                logger.debug("Trying to set up text response on LLM")
-                new_response = self.get_response(message)
-                new_response_json = json.dumps({"text": new_response}, ensure_ascii=False)
-
+                logger.debug("Trying to set up LLM response on gemini api")
+                label_resp , text_resp = VA.get_info_for_img()
+                vision_info = {
+                        "label": label_resp,
+                        "text": text_resp
+                    }
+                source_info = SM.parse_page_source()
+                logger.warning(f"{vision_info} ||| {source_info}")
+                new_response_json = json.dumps(
+                    {'message':"hi"}
+                )
                 await WS_CLIENT.send_message(type="LLM_response", message=new_response_json)
-                logger.debug("Set up text response on LLM, handing over to thread")
+                logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
-                logger.error(f"Error in setting up text response on LLM: {e}")
-            
+                logger.error(f"Error in setting up vision response: {e}")
+    
+
 class visionApi:
     def __init__(self,file_path):
         self.client = vision.ImageAnnotatorClient.from_service_account_file(file_path)
@@ -1048,7 +1090,6 @@ class visionApi:
         labels = [
             {
                 "description": label.description,
-                "confidence": label.score,
             }
             for label in lb_response.label_annotations
         ]
@@ -1083,6 +1124,7 @@ class visionApi:
 user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
 screendex = os.environ.get('SCREENDEX')
+gemini_api_key = os.environ.get('GEMINI_API_KEY')
 
 screendex = screendex.replace('px', '')
 screen_width = int(float(
@@ -1097,7 +1139,7 @@ logger.debug(f"Starting Docker for user: {user_id}")
 websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
 SM = selenium_manager()
 
-GAC = GenAIChat()
+GAC = GeminiAPIClient(api_key=gemini_api_key)
 
 VA = visionApi(file_path="credscloud.json")
 
