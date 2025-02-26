@@ -23,6 +23,7 @@ from google.cloud import vision
 import base64
 from multiprocessing.shared_memory import SharedMemory
 from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
 
 """
 This file have 3 parts .
@@ -404,6 +405,8 @@ class selenium_manager:
         self.llm_message_type = None
         self.llm_message = None
         self.llm = None
+        self.page_view_data = None
+        self.summarized_page_view_data = None
     
     """
     setup selenium driver
@@ -509,39 +512,66 @@ class selenium_manager:
         logger.debug("page source set")
         return driver
     
-    def parse_page_source(self):
-        logger.info("Processing page source")
-        source = self.source
-        soup = BeautifulSoup(source, "html.parser")
+    def get_elements_in_viewport(self, driver):
+        logger.info("Processing page viewport elements")
+        data = []
 
-        data = {
-            'links': [],
-            'inputs': [],
-            'buttons': []
-        }
+        # Get all elements of interest
+        buttons = driver.find_elements(By.TAG_NAME, "button")
+        inputs = driver.find_elements(By.TAG_NAME, "input")
+        _as = driver.find_elements(By.TAG_NAME, "a")
+        imgs = driver.find_elements(By.TAG_NAME, "img")
+        all_elems = buttons + inputs + _as + imgs
 
-        for element in soup.find_all(['button', 'input', 'a']):
-            match element.name:
-                case 'button':
-                    data['buttons'].append({
-                        'text': element.get_text(strip=True) or "Unnamed Button",
-                    })
+        for element in all_elems:
+            visible_text = element.text.strip() if element.text else None
+            is_visible, rect_cords = driver.execute_script("""
+                function isElementInViewport(el) {
+                    if (!el) return [false, null];
+                    const rect = el.getBoundingClientRect();
+                    const inViewport = (
+                        rect.top >= 0 &&
+                        rect.left >= 0 &&
+                        rect.bottom <= window.innerHeight &&
+                        rect.right <= window.innerWidth
+                    );
+                    return [inViewport, rect];
+                }
+                return isElementInViewport(arguments[0]);
+            """, element)
 
-                case 'input':
-                    data['inputs'].append({
-                        'name': element.get('name', 'unknown'),
-                        'type': element.get('type', 'text'),
-                        'placeholder': element.get('placeholder', '')
-                    })
+            if is_visible:
+                # Extract element attributes
+                all_attrs = driver.execute_script('''
+                    var items = {}; 
+                    for (var i = 0; i < arguments[0].attributes.length; i++) {
+                        items[arguments[0].attributes[i].name] = arguments[0].attributes[i].value;
+                    }
+                    return items;
+                ''', element)
 
-                case 'a':
-                    link_text = element.get_text(strip=True)
-                    if link_text:  # Only add if text exists
-                        data['links'].append({'text': link_text})
-
-        logger.info("Processed page source")
-        logger.info(data)
-        return data
+                data.append({
+                    'tag': element.tag_name,
+                    'text': visible_text,
+                    'attributes': all_attrs,
+                    'rect': {
+                        'top': rect_cords['top'],
+                        'left': rect_cords['left'],
+                        'width': rect_cords['width'],
+                        'height': rect_cords['height']
+                    }
+                })
+                self.page_view_data = data
+                summarized_page_view_data = []
+                for d in data:
+                    summarized_page_view_data.append(
+                        {
+                            'tag':d['tag'],
+                            'text': d['text'],
+                        }
+                    )
+        logger.info(f"Processed {len(data)} elements in viewport")
+        return driver , summarized_page_view_data
 
     """
     click on the driver
@@ -1047,13 +1077,9 @@ Ensure your output is structured, concise, and relevant to the given prompt.
         if type == "LLM_ask_a_text":
             try:
                 logger.debug("Trying to set up LLM response on gemini api")
-                label_resp , text_resp = VA.get_info_for_img()
-                vision_info = {
-                        "label": label_resp,
-                        "text": text_resp
-                    }
-                source_info = SM.parse_page_source()
-                logger.warning(f"{vision_info} ||| {source_info}")
+                label_resp , text_resp , vision_summery= VA.get_info_for_img()
+                SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
+                logger.warning(f"{vision_summery} ||| {source_info}")
                 new_response_json = json.dumps(
                     {'message':"hi"}
                 )
@@ -1102,18 +1128,22 @@ class visionApi:
             }
             for text in tx_response.text_annotations
         ]
-        return  labels, texts
+        vision_summery = []
+        for textele in texts:
+            vision_summery.append(textele['text'])
+        return  labels, texts , vision_summery
 
     async def trigger_bridge(self, type, message):
         """Handles different vision requests and sends responses via WebSocket."""
         if type == "vision_ask_a_vision":
             try:
                 logger.debug("Trying to set up vision response on vision api")
-                label_resp , text_resp = self.get_info_for_img()
+                label_resp , text_resp , vision_summery= self.get_info_for_img()
                 new_response_json = json.dumps(
                     {
                         "label": label_resp,
-                        "text": text_resp
+                        "text": text_resp,
+                        "vision_summery": vision_summery,
                     }, ensure_ascii=False)
                 await WS_CLIENT.send_message(type="vision_response", message=new_response_json)
                 logger.debug("Set up vision response, handing over to thread")
