@@ -1077,15 +1077,29 @@ Ensure your output is structured, concise, and relevant to the given prompt.
         if type == "LLM_ask_a_text":
             try:
                 logger.debug("Trying to set up LLM response on gemini api")
+                # SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
                 label_resp , text_resp , vision_summery= VA.get_info_for_img()
-                SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
-                logger.warning(f"{vision_summery} ||| {source_info}")
-                new_question = f"these are the details on website : by html :{source_info} , and by vision : {vision_summery} . I will ask questions now ."
+                logger.warning(f"{vision_summery} ||| ")
+                org_q = message['message']
+                logger.warning(org_q)
+                new_question = f"""
+                here, the contents I am providing is the content text visible on website.
+                if I ask you something, you need to classify if it is an action about an element or just a prompt.
+                for example, if I say "click on the button", you need to return the details of the button in the format of a JSON only.
+                for example , "click on get started here"
+                for example , "click on the about link "
+                if it is not an action, you can just return a normal response.
+                the JSON should be like this: {{'action':'action_name','element':"element","index":5}}
+                these are the details on website: 
+                by vision: {str(vision_summery)}. 
+                I will ask questions now.
+                my question is {org_q}
+                """
                 new_answer = self.generate(new_question)
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
-                logger.error(f"Error in setting up vision response: {e}")
+                logger.error(f"Error in setting up LLM response: {e}")
     
 
 class visionApi:
@@ -1142,7 +1156,7 @@ class visionApi:
                     {
                         "label": label_resp,
                         "text": text_resp,
-                        "vision_summery": vision_summery,
+                        "vision_summery": vision_summery
                     }, ensure_ascii=False)
                 await WS_CLIENT.send_message(type="vision_response", message=new_response_json)
                 logger.debug("Set up vision response, handing over to thread")
