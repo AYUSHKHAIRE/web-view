@@ -259,7 +259,7 @@ function startAsession(userid) {
     });
 }
 
-function send_chat_source_to_llm() {
+function send_chat_source_to_llm(actual_input) {
   // first tell to source page
   // let message = document.getElementById("chat").value;
   sessionSocket.send(
@@ -274,7 +274,7 @@ function send_chat_source_to_llm() {
       user_id: getUserId(),
       special: "LLM_ask_a_text",
       message:
-        "can you see this string encoded base64image ? hat is inside it ? do not return image , just a 10 line stateent discribing image . tell what is tex twrote in image in 5 lines .do not return image string , just explain in plain text what is text inside . ",
+        actual_input,
     })
   );
   let cb = document.querySelector("#ai-chat");
@@ -318,35 +318,25 @@ function detect_pressed_key() {
 
 function display_LLM_response(data) {
   let llmcon = document.getElementById("LLM-conversation");
-
-  let messagesArray;
+  let newmessage;
   try {
-    messagesArray = JSON.parse(data.message);
+    // First, parse `data.message`, since it's a stringified JSON
+    let parsedMessage = JSON.parse(data.message);
+    // Extract the actual response text
+    newmessage = parsedMessage.response;
   } catch (error) {
     console.error("Failed to parse message:", error, "Original:", data.message);
     return;
   }
-
-  // Create a single chat container
+  // Create a reply container
   let reply_container = document.createElement("div");
   reply_container.classList.add("incoming-chat", "chat");
-
-  // Convert and append each message properly
-  messagesArray.forEach((textObj) => {
-    if (!textObj.text) return; // Skip if 'text' is missing
-
-    let rawHTML = marked.parse(textObj.text); // Convert Markdown to HTML
-    reply_container.innerHTML += rawHTML + "<br>"; // Add spacing
-  });
-
-  llmcon.appendChild(reply_container); // Append to chat UI
-
-  // Apply syntax highlighting for code blocks
-  document.querySelectorAll("pre code").forEach((block) => {
-    hljs.highlightElement(block);
-  });
-
-  console.log("All LLM responses displayed with Markdown & code highlighting.");
+  // Convert Markdown to HTML (assuming `marked` is available)
+  let rawHTML = marked.parse(newmessage);
+  reply_container.innerHTML = rawHTML + "<br>";
+  // Append to chat UI
+  llmcon.appendChild(reply_container);
+  console.log("All LLM responses displayed with Markdown.");
 }
 
 function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
@@ -441,7 +431,7 @@ function send_request_for_highlight() {
           user_id: getUserId(),
           special: "vision_ask_a_vision",
           message:
-            "can you see this string encoded base64image ? hat is inside it ? do not return image , just a 10 line stateent discribing image . tell what is tex twrote in image in 5 lines .do not return image string , just explain in plain text what is text inside . ",
+            "Hello ! have you read the message ?",
         })
       );
       highlight_button.textContent = "remove highlight";
@@ -471,7 +461,12 @@ search_button.addEventListener("click", function () {
 
 const chat_button = document.querySelector("#ai-chat");
 chat_button.addEventListener("click", function () {
-  send_chat_source_to_llm();
+  any_input = document.querySelector("#ai-chat-input");
+  if (any_input.value.length > 0) {
+    ai_input = any_input.value;
+    send_chat_source_to_llm(ai_input);
+    any_input.value = "";
+  }
 });
 
 const hi_button = document.querySelector("#highlight-chat-button");
