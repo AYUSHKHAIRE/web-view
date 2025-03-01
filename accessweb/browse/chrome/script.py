@@ -1040,23 +1040,26 @@ class GeminiAPIClient:
                 types.Part.from_text(
                     text="""  
 You are assisting a person with low vision in navigating the internet.  
+the details i am providing you is text present on a website I have opened.
 Your task is to analyze the provided prompt and determine whether it is:  
 1. A **general query** that requires a normal response.  
 2. An **action request**, which can be one of the following types:  
    - **Click**: The user wants to click on a specific element.  
-   - **Fill**: The user wants to enter text into an input field.  
+   - **Fil/search/enter a vslue in an inputl**: The user wants to enter text into an input field.  
    - **Hover**: The user wants to hover over an element for additional information.  
 
-If the prompt indicates an action, you will receive an **information section** containing elements and their coordinates.  
+If the prompt indicates an action, you will receive an **information section** containing elements.
+  
 Your response must extract the relevant element and return it in the following format:  
-
+whatever the action you perform or whatever the user ask about an element .
+you need to detect the action about , look for the text , in the provided list , 
+and return it as in format .
+for example , if on a website there is a buttonn sign up .
+and the user ask you to click on the sign up button .
+you will return the text sign up button , with the format below in a JSON .
 accessweb action element_text coordinates remark
-in as a JSON response
-
-### Information Section:  
-{"get started for free": {"x": 122, "y": 200}},  
-{"signup": {"x": 22, "y": 20}}  
-
+do not use "\n" anyway .
+if question starts with > , yuo need to explicitly apply an action - for sure .
 If no action is detected, simply return a normal response.  
 Ensure your output is structured, concise, and relevant to the given prompt.  
 """  
@@ -1083,19 +1086,14 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 org_q = message['message']
                 logger.warning(org_q)
                 new_question = f"""
-                here, the contents I am providing is the content text visible on website.
-                if I ask you something, you need to classify if it is an action about an element or just a prompt.
-                for example, if I say "click on the button", you need to return the details of the button in the format of a JSON only.
-                for example , "click on get started here"
-                for example , "click on the about link "
-                if it is not an action, you can just return a normal response.
-                the JSON should be like this: {{'action':'action_name','element':"element","index":5}}
                 these are the details on website: 
                 by vision: {str(vision_summery)}. 
                 I will ask questions now.
-                my question is {org_q}
+                my question is {org_q} 
                 """
                 new_answer = self.generate(new_question)
+                new_answer_dict = json.loads(new_answer)
+                logger.warning(f'{new_answer_dict} | {new_answer_dict["action"]} | {new_answer_dict["element_text"]}')
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
