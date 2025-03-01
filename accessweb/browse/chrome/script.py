@@ -562,14 +562,14 @@ class selenium_manager:
                     }
                 })
                 self.page_view_data = data
-                summarized_page_view_data = []
+                summarized_page_view_data = {}
                 for d in data:
-                    summarized_page_view_data.append(
-                        {
-                            'tag':d['tag'],
-                            'text': d['text'],
-                        }
-                    )
+                    if d['tag'] in summarized_page_view_data.keys():
+                        summarized_page_view_data[d].append(
+                                d['text']
+                        )
+                    else:
+                        summarized_page_view_data[d['tag']] = [d['tag']]
         logger.info(f"Processed {len(data)} elements in viewport")
         return driver , summarized_page_view_data
 
@@ -1080,10 +1080,9 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 label_resp , text_resp , vision_summery= VA.get_info_for_img()
                 SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
                 logger.warning(f"{vision_summery} ||| {source_info}")
-                new_response_json = json.dumps(
-                    {'message':"hi"}
-                )
-                await WS_CLIENT.send_message(type="LLM_response", message=new_response_json)
+                new_question = f"these are the details on website : by html :{source_info} , and by vision : {vision_summery} . I will ask questions now ."
+                new_answer = self.generate(new_question)
+                await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
                 logger.error(f"Error in setting up vision response: {e}")
