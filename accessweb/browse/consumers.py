@@ -53,6 +53,7 @@ class WebSocketConsumer(
                     "user_id", 
                     "unknown"
                 )
+                logger.warning(data)
                 if message_type == "register":
                     response = {
                         "type": "register",
@@ -97,6 +98,7 @@ class WebSocketConsumer(
                     }
                     logger.debug(f"Saying page source to user {user_id}")
                 elif message_type == "LLM_ask_a_text":
+                    logger.warning(data)
                     response = {
                         "type": "LLM_ask_a_text",
                         "message":data["message"]
