@@ -1057,7 +1057,7 @@ and return it as in format .
 for example , if on a website there is a buttonn sign up .
 and the user ask you to click on the sign up button .
 you will return the text sign up button , with the format below in a JSON .
-accessweb action element_text coordinates remark
+action element_text coordinates remark
 do not use "\n" anyway .
 if question starts with > , yuo need to explicitly apply an action - for sure .
 If no action is detected, simply return a normal response.  
@@ -1092,8 +1092,14 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 my question is {org_q} 
                 """
                 new_answer = self.generate(new_question)
+                logger.warning(new_answer)
                 new_answer_dict = json.loads(new_answer)
-                logger.warning(f'{new_answer_dict} | {new_answer_dict["action"]} | {new_answer_dict["element_text"]}')
+                action_required = new_answer_dict["action"].lower()
+                element_text = new_answer_dict["element_text"]
+                new_cordinates = None
+                if element_text in  text_resp.keys():
+                    new_cordinates = text_resp[element_text]
+                logger.warning(f'{new_cordinates} | {action_required} | {element_text}')
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
@@ -1103,6 +1109,8 @@ Ensure your output is structured, concise, and relevant to the given prompt.
 class visionApi:
     def __init__(self,file_path):
         self.client = vision.ImageAnnotatorClient.from_service_account_file(file_path)
+        self.label_resp = None
+        self.text_resp = None
         
     def get_screenshot_content(self):
         try:
@@ -1130,18 +1138,14 @@ class visionApi:
             }
             for label in lb_response.label_annotations
         ]
-        texts = [
-            {
-                "text": text.description,
-                "bounding_box": [
+        texts = {}
+        for text in tx_response.text_annotations:
+            texts[text.description] = [
                     {"x": vertex.x, "y": vertex.y} for vertex in text.bounding_poly.vertices
-                ],
-            }
-            for text in tx_response.text_annotations
-        ]
+                ]
         vision_summery = []
-        for textele in texts:
-            vision_summery.append(textele['text'])
+        for textele in texts.keys():
+            vision_summery.append(textele)
         return  labels, texts , vision_summery
 
     async def trigger_bridge(self, type, message):
@@ -1150,6 +1154,8 @@ class visionApi:
             try:
                 logger.debug("Trying to set up vision response on vision api")
                 label_resp , text_resp , vision_summery= self.get_info_for_img()
+                self.label_resp = label_resp
+                self.text_resp = text_resp
                 new_response_json = json.dumps(
                     {
                         "label": label_resp,
