@@ -1100,6 +1100,11 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 if element_text in  text_resp.keys():
                     new_cordinates = text_resp[element_text]
                 logger.warning(f'{new_cordinates} | {action_required} | {element_text}')
+                if action_required == "click":
+                    center_x = sum(point['x'] for point in new_cordinates) / 4
+                    center_y = sum(point['y'] for point in new_cordinates) / 4
+                    center = (center_x, center_y)
+                    logger.warning(f"Center coordinates click : {center}")
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
