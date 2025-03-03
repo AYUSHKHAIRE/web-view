@@ -1104,6 +1104,12 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                     center_x = sum(point['x'] for point in new_cordinates) / 4
                     center_y = sum(point['y'] for point in new_cordinates) / 4
                     center = (center_x, center_y)
+                    infodict = {
+                        'x':int(center_x),
+                        'y':int(center_y),
+                    }
+                    SM.driver_message = "click_on_driver"
+                    SM.driver_instruction =  infodict
                     logger.warning(f"Center coordinates click : {center}")
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
