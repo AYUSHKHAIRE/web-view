@@ -1045,7 +1045,7 @@ Your task is to analyze the provided prompt and determine whether it is:
 1. A **general query** that requires a normal response.  
 2. An **action request**, which can be one of the following types:  
    - **Click**: The user wants to click on a specific element.  
-   - **Fil/search/enter a vslue in an inputl**: The user wants to enter text into an input field.  
+   - **fill_search_enter**: The user wants to enter text into an input field.  
    - **Hover**: The user wants to hover over an element for additional information.  
 
 If the prompt indicates an action, you will receive an **information section** containing elements.
@@ -1057,8 +1057,10 @@ and return it as in format .
 for example , if on a website there is a buttonn sign up .
 and the user ask you to click on the sign up button .
 you will return the text sign up button , with the format below in a JSON .
-action element_text coordinates remark
+action element_text coordinates remark new_generated_text
 do not use "\n" anyway .
+for click action , new_generated_text will none .
+for fill_search_enter action , new_generated_text will be the text user asked to fill or search . element_text also be there .
 if question starts with > , yuo need to explicitly apply an action - for sure .
 If no action is detected, simply return a normal response.  
 Ensure your output is structured, concise, and relevant to the given prompt.  
@@ -1094,13 +1096,17 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 new_answer = self.generate(new_question)
                 logger.warning(new_answer)
                 new_answer_dict = json.loads(new_answer)
-                action_required = new_answer_dict["action"].lower()
-                element_text = new_answer_dict["element_text"]
+                action_required = new_answer_dict["action"].lower().replace('\n','')
+                element_text = new_answer_dict["element_text"].replace('\n','')
                 new_cordinates = None
+                new_generated_text = None
+                if new_answer_dict["new_generated_text"]:
+                    new_generated_text = new_answer_dict["new_generated_text"].replace('\n','')
                 if element_text in  text_resp.keys():
                     new_cordinates = text_resp[element_text]
                 logger.warning(f'{new_cordinates} | {action_required} | {element_text}')
                 if action_required == "click":
+                    logger.warning(f"click triggered by ai")
                     center_x = sum(point['x'] for point in new_cordinates) / 4
                     center_y = sum(point['y'] for point in new_cordinates) / 4
                     center = (center_x, center_y)
@@ -1111,6 +1117,23 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                     SM.driver_message = "click_on_driver"
                     SM.driver_instruction =  infodict
                     logger.warning(f"Center coordinates click : {center}")
+                if action_required == "fill_search_enter":
+                    logger.warning(f"input triggered by ai")
+                    center_x = sum(point['x'] for point in new_cordinates) / 4
+                    center_y = sum(point['y'] for point in new_cordinates) / 4
+                    center = (center_x, center_y)
+                    infodict = {
+                        'x':int(center_x),
+                        'y':int(center_y),
+                    }
+                    new_keypress_dict = {
+                        'key':new_generated_text
+                    }
+                    SM.driver_message = "click_on_driver"
+                    SM.driver_instruction =  infodict
+                    SM.driver_message = "keypress"
+                    SM.driver_instruction = new_keypress_dict
+                    
                 await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
