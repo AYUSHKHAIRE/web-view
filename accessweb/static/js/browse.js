@@ -282,6 +282,27 @@ function send_chat_source_to_llm(actual_input) {
   console.log("sending chat source to llm");
 }
 
+function convert_brail_to_text() {
+  sessionSocket.send(
+    JSON.stringify({
+      user_id: getUserId(),
+      special: "convert_brail_to_text",
+      message: "125 15 123 123 135 3456 1 3456 12 3456 14",
+    })
+  );
+  console.log("asked for text to brail")
+}
+function convert_text_to_brail() {
+  sessionSocket.send(
+    JSON.stringify({
+      user_id: getUserId(),
+      special: "convert_text_to_brail",
+      message: "hello123",
+    })
+  );
+  console.log("asked for brail to text");
+}
+
 document
   .getElementById("browser_screenshot")
   .addEventListener("click", function (event) {
@@ -412,7 +433,6 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
     highlightBox.style.border = "2px solid red";
     highlightBox.style.backgroundColor = "rgba(255, 0, 0, 0.3)"; // Semi-transparent red
     highlightBox.style.pointerEvents = "none";
-
     overlayElement.appendChild(highlightBox);
   });
 }
@@ -444,6 +464,8 @@ function send_request_for_highlight() {
     highlight_con.style.display = "None";
     highlight_button.textContent = "show highlight";
   }
+  convert_brail_to_text();
+  convert_text_to_brail();
 }
 
 // Attach event listener
