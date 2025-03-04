@@ -596,43 +596,34 @@ class selenium_manager:
         logger.warning("starting clickinng process")
         logger.warning("locked .")
         if driver:
-            outer_width = driver.execute_script(
-                "return window.outerWidth;")
-            inner_width = driver.execute_script(
-                "return window.innerWidth;")
-            outer_height = driver.execute_script(
-                "return window.outerHeight;")
-            inner_height = driver.execute_script(
-                "return window.innerHeight;")
-            body_width = driver.execute_script(
-                "return document.body.scrollWidth;")
-            body_height = driver.execute_script(
-                "return document.body.scrollHeight;")
+            # outer_width = driver.execute_script(
+            #     "return window.outerWidth;")
+            # inner_width = driver.execute_script(
+            #     "return window.innerWidth;")
+            # outer_height = driver.execute_script(
+            #     "return window.outerHeight;")
+            # inner_height = driver.execute_script(
+            #     "return window.innerHeight;")
+            # body_width = driver.execute_script(
+            #     "return document.body.scrollWidth;")
+            # body_height = driver.execute_script(
+            #     "return document.body.scrollHeight;")
             # logger.info('Original x and y:', x, y)
             # logger.info('Outer Dimensions:', outer_width, outer_height)
             # logger.info('Inner Dimensions:', inner_width, inner_height)
             # logger.info('Body Width:', body_width, 'Body Height:', body_height)
-            new_y = y
-            if y > inner_height:
-                driver.execute_script(
-                    f"window.scrollTo(0, {y});")
-            current_scroll_position = driver.execute_script(
-                "return window.pageYOffset;")
-            new_y = y - current_scroll_position
-            logger.info(
-                f'Adjusted Y after scrolling: {new_y}')
             element = driver.execute_script(
-                "return document.elementFromPoint(arguments[0], arguments[1]);", x, new_y)
+                "return document.elementFromPoint(arguments[0], arguments[1]);", x, y)
             if element:
                 try:
                     action = ActionChains(driver)
                     action.move_to_element(element).click().perform()
-                    logger.debug(f'Clicked on element at {x}, {new_y}')
+                    logger.debug(f'Clicked on element at {x}, {y}')
                     return driver
                 except MoveTargetOutOfBoundsException:
-                    logger.error(f'Failed to click at {x}, {new_y} due to out of bounds error')
+                    logger.error(f'Failed to click at {x}, {y} due to out of bounds error')
             else:
-                logger.warning(f'Element not found at {x}, {new_y}')
+                logger.warning(f'Element not found at {x}, {y}')
                 return driver
         else:
             logger.error("Error in clicking driver")
