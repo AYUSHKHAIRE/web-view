@@ -1102,13 +1102,18 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 new_generated_text = None
                 if new_answer_dict["new_generated_text"]:
                     new_generated_text = new_answer_dict["new_generated_text"].replace('\n','')
-                if element_text in  text_resp.keys():
-                    new_cordinates = text_resp[element_text]
-                logger.warning(f'{new_cordinates} | {action_required} | {element_text}')
+                cord_group = []
+                for key in text_resp.keys():
+                    if key in  element_text:
+                        cord_group.append(text_resp[key])
+                logger.warning(f'{cord_group} | {action_required} | {element_text}')
                 if action_required == "click":
                     logger.warning(f"click triggered by ai")
-                    center_x = sum(point['x'] for point in new_cordinates) / 4
-                    center_y = sum(point['y'] for point in new_cordinates) / 4
+                    new_list = []
+                    for a_list in cord_group:
+                        new_list = new_list + a_list
+                    center_x = sum(point['x'] for point in new_list) / len(new_list)
+                    center_y = sum(point['y'] for point in new_list) / len(new_list)
                     center = (center_x, center_y)
                     infodict = {
                         'x':int(center_x),
@@ -1119,8 +1124,11 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                     logger.warning(f"Center coordinates click : {center}")
                 if action_required == "fill_search_enter":
                     logger.warning(f"input triggered by ai")
-                    center_x = sum(point['x'] for point in new_cordinates) / 4
-                    center_y = sum(point['y'] for point in new_cordinates) / 4
+                    new_list = []
+                    for a_list in cord_group:
+                        new_list = new_list + a_list
+                    center_x = sum(point['x'] for point in new_list) / len(new_list)
+                    center_y = sum(point['y'] for point in new_list) / len(new_list)
                     center = (center_x, center_y)
                     infodict = {
                         'x':int(center_x),
@@ -1131,6 +1139,7 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                     }
                     SM.driver_message = "click_on_driver"
                     SM.driver_instruction =  infodict
+                    time.sleep(2)
                     SM.driver_message = "keypress"
                     SM.driver_instruction = new_keypress_dict
                     
