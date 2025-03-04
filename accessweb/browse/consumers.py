@@ -7,6 +7,10 @@ from browse.views import MM
 import asyncio
 import time
 
+'''
+I follow the international standard .
+refer this article : https://www.pharmabraille.com/pharmaceutical-braille/the-braille-alphabet/
+'''
 class WebSocketConsumer(
     AsyncWebsocketConsumer
 ):
