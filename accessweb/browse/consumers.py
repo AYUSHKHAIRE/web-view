@@ -6,11 +6,15 @@ from browse.memory_manager import memoryManager
 from browse.views import MM
 import asyncio
 import time
+from browse.brailbelt import BrailBelt
 
 '''
 I follow the international standard .
 refer this article : https://www.pharmabraille.com/pharmaceutical-braille/the-braille-alphabet/
 '''
+
+BB = BrailBelt()
+
 class WebSocketConsumer(
     AsyncWebsocketConsumer
 ):
@@ -126,6 +130,16 @@ class WebSocketConsumer(
                         "message":data["message"]
                     }
                     logger.debug(f"Saying response by vision to user {user_id}")
+                elif message_type == "convert_text_to_brail":
+                    response = {
+                        "type": "vision_response",
+                        "message":BB.encode_string(data["message"])
+                    }
+                elif message_type == "convert_brail_to_text":
+                    response = {
+                        "type": "vision_response",
+                        "message":BB.decode_string(data["message"])
+                    }
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
