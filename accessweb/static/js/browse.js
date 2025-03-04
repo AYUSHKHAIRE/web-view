@@ -361,11 +361,10 @@ function display_LLM_response(data) {
 }
 
 function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
-  console.log("Received textData (raw):", textData); // Debugging log
-  const imageElement = document.getElementById(imageid); // Your image
-  const overlayElement = document.getElementById(overlayimagehighlightid); // A div that sits over the image
+  console.log("Received textData (raw):", textData);
+  const imageElement = document.getElementById(imageid);
+  const overlayElement = document.getElementById(overlayimagehighlightid);
 
-  // ✅ Parse JSON if it's a string
   try {
     if (typeof textData === "string") {
       textData = JSON.parse(textData);
@@ -376,17 +375,16 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
     return;
   }
 
-  // ✅ Ensure textData is valid
-  if (
-    !textData ||
-    typeof textData !== "object" ||
-    !Array.isArray(textData.text)
-  ) {
+  if (!textData || typeof textData !== "object" || !textData.text) {
     console.error("Error: textData is invalid.", textData);
     return;
   }
 
-  // ✅ Get image dimensions
+  const textEntries = Object.entries(textData.text).map(([text, bbox]) => ({
+    text: text,
+    bounding_box: bbox,
+  }));
+
   const imgWidth = imageElement.naturalWidth;
   const imgHeight = imageElement.naturalHeight;
   const displayWidth = imageElement.clientWidth;
@@ -395,20 +393,16 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
   console.log("Image dimensions:", imgWidth, imgHeight);
   console.log("Displayed size:", displayWidth, displayHeight);
 
-  // ✅ Scaling factors
   const scaleX = displayWidth / imgWidth;
   const scaleY = displayHeight / imgHeight;
 
   console.log("Scale factors:", scaleX, scaleY);
 
-  // ✅ Clear previous highlights
   overlayElement.innerHTML = "";
 
-  // ✅ Draw boxes
-  textData.text.forEach((item) => {
+  textEntries.forEach((item) => {
     const bbox = item.bounding_box;
-
-    if (bbox.length !== 4) return;
+    if (!Array.isArray(bbox) || bbox.length !== 4) return;
 
     // Get bounding box coordinates
     const x1 = bbox[0].x * scaleX;
@@ -423,7 +417,6 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
       `Highlighting "${item.text}" at (${x1}, ${y1}, ${width}, ${height})`
     );
 
-    // ✅ Create box
     const highlightBox = document.createElement("div");
     highlightBox.style.position = "absolute";
     highlightBox.style.left = `${x1}px`;
@@ -431,7 +424,7 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
     highlightBox.style.width = `${width}px`;
     highlightBox.style.height = `${height}px`;
     highlightBox.style.border = "2px solid red";
-    highlightBox.style.backgroundColor = "rgba(255, 0, 0, 0.3)"; // Semi-transparent red
+    highlightBox.style.backgroundColor = "rgba(219, 216, 44, 0.34)";
     highlightBox.style.pointerEvents = "none";
     overlayElement.appendChild(highlightBox);
   });
