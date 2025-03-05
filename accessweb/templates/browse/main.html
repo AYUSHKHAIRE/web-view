@@ -102,7 +102,7 @@
       </div>
     </div>
   </div>
-  <div id="aichat" class="chat-box" >
+  <div id="aichat" class="chat-box">
     <div class="chat-header" onclick="minimizeChat('aichat')">chat with AI</div>
     <div class="chat-content">
       <div class="chatBot">
@@ -128,7 +128,7 @@
       </div>
     </div>
   </div>
-  <div id="highlight-chat-box" class="chat-box" >
+  <div id="highlight-chat-box" class="chat-box">
     <div class="chat-header" onclick="minimizeChat('highlight-chat-box')">
       Highlight text
     </div>
@@ -139,7 +139,11 @@
       </button>
     </div>
   </div>
-  <div id="brail-reader" class="chat-box brail-reader" style=" width: 70vw; height: 70vh;">
+  <div
+    id="brail-reader"
+    class="chat-box brail-reader"
+    style="width: 70vw; height: 70vh; top: 100px"
+  >
     <div class="chat-header" onclick="minimizeChat('brail-reader')">
       Brail reader
     </div>
@@ -147,6 +151,9 @@
       <div class="mainbrailcolordiv">
         <div id="braildiv" class="braildiv">
           <div class="mainbrailstrip" id="mainbrailstrip">
+            <div class="brailarrow" id="brailleft">
+              <button>&lt;</button>
+            </div>
             <div class="brailcol" id="brailcol1">
               <div id="braildot1" class="dot braildot"></div>
               <div id="braildot2" class="dot braildot"></div>
@@ -157,6 +164,38 @@
               <div id="braildot5" class="dot braildot"></div>
               <div id="brailcol6" class="dot braildot"></div>
             </div>
+            <div class="brailarrow" id="brailright">
+              <button>&gt;</button>
+            </div>
+          </div>
+          <div class="textstrip">
+            <button class="brail-english-letter" id="brail-english-letter-0">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-1">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-2">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-3">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-4">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-5">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-6">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-7">
+              &nbsp;&nbsp;&nbsp;
+            </button>
+            <button class="brail-english-letter" id="brail-english-letter-8">
+              &nbsp;&nbsp;&nbsp;
+            </button>
           </div>
         </div>
       </div>
