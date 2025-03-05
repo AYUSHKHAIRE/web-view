@@ -130,18 +130,6 @@ class WebSocketConsumer(
                         "message":data["message"]
                     }
                     logger.debug(f"Saying response by vision to user {user_id}")
-                elif message_type == "convert_text_to_brail":
-                    response = {
-                        "type": "text_to_brail",
-                        "message":BB.encode_string(data["message"])
-                    }
-                    logger.debug(f"Saying response by brail belt to user {user_id}")
-                elif message_type == "convert_brail_to_text":
-                    response = {
-                        "type": "brail_to_text",
-                        "message":BB.decode_string(data["message"])
-                    }
-                    logger.debug(f"Saying response by brail belt to user {user_id}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
