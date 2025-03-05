@@ -536,3 +536,40 @@ button:hover {
     padding: 10px;
   }
 }
+
+/* brail handler */
+.brail-reader .mainbrailcolordiv{
+  width: 80vw;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+  position: fixed;
+}
+
+.braildiv .mainbrailstrip{
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.brailcol{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+}
+
+.brailcol .dot{
+  display: flex;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  margin: 30px;
+  border: 2px double white;
+}
