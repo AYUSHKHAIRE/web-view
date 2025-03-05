@@ -95,7 +95,7 @@ class BrailBelt {
 }
 
 const braille = new BrailBelt();
-let text_being_carried = "    try to click here";
+let text_being_carried = "    try to click here 124";
 let currentIndex = 0;
 let visibleTrackSize = 9;
 
