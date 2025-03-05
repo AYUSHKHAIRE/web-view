@@ -61,6 +61,7 @@ add these styles
 class BrailBelt {
   constructor() {
     this.brailleDict = {
+      " ": "", // No dots for space
       a: "1",
       b: "12",
       c: "14",
@@ -105,6 +106,36 @@ class BrailBelt {
     }
   }
 
+  decodeString(toDecode) {
+    if (typeof toDecode !== "string") {
+      throw new Error(
+        `${toDecode} should be in string format, not ${typeof toDecode}`
+      );
+    }
+    let decodedString = "";
+    let numDetectedFlag = false;
+    let words = toDecode.split(" ");
+
+    for (let i = 0; i < words.length; i++) {
+      let seq = words[i];
+
+      if (seq === "3456") {
+        numDetectedFlag = true;
+        continue;
+      }
+
+      let key = numDetectedFlag ? `3456 ${seq}` : seq;
+      numDetectedFlag = false;
+
+      if (seq === "") {
+        decodedString += " "; // Ensure spaces are decoded properly
+      } else {
+        decodedString += this.utf8Dict[key] || "?"; // '?' for unknown sequences
+      }
+    }
+    return decodedString.trim();
+  }
+
   encodeString(toEncode) {
     if (typeof toEncode !== "string") {
       throw new Error(
@@ -121,53 +152,115 @@ class BrailBelt {
     }
     return encodedString.trim();
   }
-
-  decodeString(toDecode) {
-    if (typeof toDecode !== "string") {
-      throw new Error(
-        `${toDecode} should be in string format, not ${typeof toDecode}`
-      );
-    }
-    let decodedString = "";
-    let numDetectedFlag = false;
-    let words = toDecode.split(" ");
-
-    for (let i = 0; i < words.length; i++) {
-      let seq = words[i];
-
-      if (seq === "3456") {
-        // Number indicator detected
-        numDetectedFlag = true;
-        continue;
-      }
-
-      let key = numDetectedFlag ? `3456 ${seq}` : seq;
-      numDetectedFlag = false; // Reset flag
-
-      let utf8Seq = this.utf8Dict[key] || "?"; // '?' for unknown sequences
-      decodedString += utf8Seq;
-    }
-    return decodedString.trim();
-  }
 }
 
-// Example usage:
 const braille = new BrailBelt();
-let encoded = braille.encodeString("hello123");
-console.log(`Encoded: ${encoded}`);
-let decoded = braille.decodeString(encoded);
-console.log(`Decoded: ${decoded}`);
+let track = new Array(9).fill(" "); // Fixed 9 spaces
+let text_being_carried = "try to click here";
 
-function display_a_letter_in_brail(numbers) {
-  all_dots = document.getElementsByClassName("braildot");
-  for (i = 0; i < all_dots.length; i++) {
-    all_dots[i].style.backgroundColor = "black";
+function prepare_track(full_text) {
+  track.fill(" "); // Reset track
+
+  let middleIndex = Math.floor(track.length / 2);
+  let startIndex = Math.max(middleIndex - Math.floor(full_text.length / 2), 0);
+  let endIndex = Math.min(startIndex + full_text.length, track.length);
+
+  for (let i = startIndex, j = 0; i < endIndex; i++, j++) {
+    track[i] = full_text[j];
   }
-  for (i = 0; i < numbers.length; i++) {
-    target_dot = document.getElementById("braildot" + numbers[i]);
-    target_dot.style.backgroundColor = "white";
+
+  updateDisplay();
+}
+
+function updateDisplay() {
+  let middleIndex = Math.floor(track.length / 2);
+
+  for (let i = 0; i < track.length; i++) {
+    let button_target = document.getElementById("brail-english-letter-" + i);
+    if (button_target) {
+      button_target.textContent = track[i];
+    }
+  }
+
+  let currentMiddleLetter = track[middleIndex].trim() || " ";
+  let brailleCode = braille.encodeString(currentMiddleLetter);
+  display_a_letter_in_brail(brailleCode);
+}
+function display_a_letter_in_brail(numbers) {
+  let all_dots = document.getElementsByClassName("braildot");
+  for (let dot of all_dots) {
+    dot.style.backgroundColor = "black"; // Reset
+  }
+
+  if (numbers === "") return; // If it's a space, don't activate any dots
+
+  for (let num of numbers) {
+    let target_dot = document.getElementById("braildot" + num);
+    if (target_dot) {
+      target_dot.style.backgroundColor = "white"; // Activate Braille dots
+    }
   }
 }
 
-let a = braille.encodeString("a");
-display_a_letter_in_brail(a);
+function updateTrack(clickedIndex) {
+  let middleIndex = Math.floor(track.length / 2);
+  let clickedLetter = track[clickedIndex];
+
+  if (clickedLetter.trim() === "") return; // Ignore empty clicks
+
+  // Find the relative occurrence of the clicked letter inside track
+  let relativeCount = 0;
+  for (let i = 0; i < clickedIndex; i++) {
+    if (track[i] === clickedLetter) {
+      relativeCount++;
+    }
+  }
+
+  // Find the corresponding occurrence in text_being_carried
+  let letterIndex = -1;
+  let count = 0;
+  for (let i = 0; i < text_being_carried.length; i++) {
+    if (text_being_carried[i] === clickedLetter) {
+      if (count === relativeCount) {
+        letterIndex = i;
+        break;
+      }
+      count++;
+    }
+  }
+
+  if (letterIndex === -1) return; // If the letter isn't found, do nothing
+
+  // Adjust to prevent cutting off the last letters
+  let newStart = Math.max(letterIndex - middleIndex, 0);
+  let newEnd = Math.min(newStart + track.length, text_being_carried.length);
+
+  let trimmedText = text_being_carried.slice(newStart, newEnd);
+
+  track.fill(" "); // Reset track
+  let insertIndex = Math.max(middleIndex - (letterIndex - newStart), 0);
+
+  for (
+    let i = 0, j = insertIndex;
+    i < trimmedText.length && j < track.length;
+    i++, j++
+  ) {
+    track[j] = trimmedText[i];
+  }
+
+  updateDisplay();
+}
+
+// Attach event listeners after DOM is loaded
+document.addEventListener("DOMContentLoaded", function () {
+  prepare_track(text_being_carried);
+
+  for (let index = 0; index < track.length; index++) {
+    let element = document.getElementById("brail-english-letter-" + index);
+    if (element) {
+      element.addEventListener("click", function () {
+        updateTrack(index);
+      });
+    }
+  }
+});
