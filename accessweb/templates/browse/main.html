@@ -4,20 +4,19 @@
   <div class="maincontainer">
     <div class="container">
       <h1>Break the Barriers , {{request.user.username}} !</h1>
-      
+
       {% if user.is_authenticated %}
       <button id="startSessionButton">Start Session</button>
       {% else %}
       <a href="{% url 'login' %}">
-    <button id="loginButton">Login</button>
-    </a>
+        <button id="loginButton">Login</button>
+      </a>
       {% endif %}
     </div>
   </div>
 </div>
 
-
-{% if user.is_authenticated %}  
+{% if user.is_authenticated %}
 <div class="searchbar">
   <input
     type="search"
@@ -25,7 +24,7 @@
     id="search"
     class="search"
     placeholder="Search or enter a URL ..."
-    value = "https://www.kaggle.com/ayushkhaire"
+    value="https://www.kaggle.com/ayushkhaire"
   />
   <button id="search_btn" class="searchbtn">Search</button>
 </div>
@@ -37,7 +36,11 @@
       alt="Image will display here"
       style="width: 100%; height: 100%"
     />
-    <div  style="display: none;" class="imagehighlightoverlay" id="imagehighlightoverlay"></div>
+    <div
+      style="display: none"
+      class="imagehighlightoverlay"
+      id="imagehighlightoverlay"
+    ></div>
     <div class="lens"></div>
   </div>
 </div>
@@ -48,10 +51,10 @@
       <button onclick="toggleChat('lens')">Toggle Lens</button>
       <button onclick="toggleChat('aichat')">chat with AI</button>
       <button onclick="toggleChat('highlight-chat-box')">Highlight text</button>
-      <button onclick="toggleChat('chat4')">Toggle Chat 4</button>
+      <button onclick="toggleChat('brail-reader')">Brail reader</button>
     </div>
   </div>
-  <div id="lens" class="chat-box" style="right: 10px">
+  <div id="lens" class="chat-box">
     <div class="chat-header" onclick="minimizeChat('lens')">lens</div>
     <div class="controllerscon">
       <div id="vistool">
@@ -99,7 +102,7 @@
       </div>
     </div>
   </div>
-  <div id="aichat" class="chat-box" style="right: 270px">
+  <div id="aichat" class="chat-box" >
     <div class="chat-header" onclick="minimizeChat('aichat')">chat with AI</div>
     <div class="chat-content">
       <div class="chatBot">
@@ -118,29 +121,58 @@
             placeholder="Enter a message..."
             class="ai-chat-input"
             id="ai-chat-input"
-            value = "can you click on code ?"
-          >
+            value="can you click on code ?"
+          />
           <button id="ai-chat">Start Chat</button>
         </div>
       </div>
     </div>
-    <div id="highlight-chat-box" class="chat-box" style="right: 530px">
-      <div class="chat-header" onclick="minimizeChat('highlight-chat-box')">Highlight text</div>
-      <div class="chat-content">highlight the text</div>
-      <button id="highlight-chat-button" class="highlight-chat-button">highlight</button>
+  </div>
+  <div id="highlight-chat-box" class="chat-box" >
+    <div class="chat-header" onclick="minimizeChat('highlight-chat-box')">
+      Highlight text
     </div>
-    <div id="chat4" class="chat-box" style="right: 790px">
-      <div class="chat-header" onclick="minimizeChat('chat4')">Chat 4</div>
-      <div class="chat-content">This is Chat 4</div>
+    <div class="chat-content">
+      <h1>highlight the text</h1>
+      <button id="highlight-chat-button" class="highlight-chat-button">
+        highlight
+      </button>
+    </div>
+  </div>
+  <div id="brail-reader" class="chat-box brail-reader" style=" width: 70vw; height: 70vh;">
+    <div class="chat-header" onclick="minimizeChat('brail-reader')">
+      Brail reader
+    </div>
+    <div class="chat-content">
+      <div class="mainbrailcolordiv">
+        <div id="braildiv" class="braildiv">
+          <div class="mainbrailstrip" id="mainbrailstrip">
+            <div class="brailcol" id="brailcol1">
+              <div id="braildot1" class="dot braildot"></div>
+              <div id="braildot2" class="dot braildot"></div>
+              <div id="braildot3" class="dot braildot"></div>
+            </div>
+            <div class="brailcol" id="brailcol2">
+              <div id="braildot4" class="dot braildot"></div>
+              <div id="braildot5" class="dot braildot"></div>
+              <div id="brailcol6" class="dot braildot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script src="{% static 'js/browse.js' %}"></script>
   <script src="{% static 'js/img-zoom.js' %}"></script>
+  <script src="{% static 'js/brail.js' %}"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css"
+  />
   <script>
     $(function () {
       $(".chat-box").draggable({ handle: ".chat-header" });
@@ -160,6 +192,4 @@
     }
   </script>
 </div>
-{% endif %}
-  
-{% endblock content %}
+{% endif %} {% endblock content %}
