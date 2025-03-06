@@ -400,6 +400,11 @@ button:hover {
 .buttons-browse {
   bottom: 0px;
   position: fixed;
+  width: 99vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .interactivewindows{
   display: flex;
@@ -409,11 +414,14 @@ button:hover {
 }
 .buttonhandlers{
   display: flex;
+  width: 99vw;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 /* Import Google Font */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
-/* ChatBot Container */
 .chatBot {
   display: flex;
   flex-direction: column;
@@ -429,7 +437,6 @@ button:hover {
   height: 500px;
 }
 
-/* Header */
 .chatBot header {
   display: flex;
   justify-content: space-between;
@@ -440,7 +447,6 @@ button:hover {
   font-weight: 600;
 }
 
-/* Chatbox (Message Area) */
 .chatbox {
   flex-grow: 1;
   padding: 15px;
@@ -451,14 +457,12 @@ button:hover {
   flex-direction: column;
 }
 
-/* Chat Messages */
 .chat {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
 
-/* Incoming Messages */
 .chat-incoming {
   align-self: flex-start;
 }
@@ -468,7 +472,6 @@ button:hover {
   color: white;
 }
 
-/* Chat Bubble */
 .chat {
   max-width: 80%;
   padding: 10px 14px;
@@ -482,7 +485,6 @@ button:hover {
   overflow: scroll;
 }
 
-/* Input Area */
 .chat-input {
   display: flex;
   padding: 12px;
@@ -491,7 +493,6 @@ button:hover {
   align-items: center;
 }
 
-/* Input Box */
 .chat-input input {
   flex-grow: 1;
   height: 40px;
@@ -504,7 +505,6 @@ button:hover {
   font-size: 0.9rem;
 }
 
-/* Send Button */
 #ai-chat {
   height: 40px;
   padding: 0 14px;
