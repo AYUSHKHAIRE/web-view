@@ -1,7 +1,8 @@
 class BrailBelt {
   constructor() {
     this.brailleDict = {
-      " ": "", // No dots for space
+      "#": "3456",
+      " ": "",
       a: "1",
       b: "12",
       c: "14",
@@ -28,16 +29,16 @@ class BrailBelt {
       x: "1346",
       y: "13456",
       z: "1356",
-      1: "3456 1",
-      2: "3456 12",
-      3: "3456 14",
-      4: "3456 145",
-      5: "3456 15",
-      6: "3456 124",
-      7: "3456 1245",
-      8: "3456 125",
-      9: "3456 24",
-      0: "3456 245",
+      1: "1",
+      2: "12",
+      3: "14",
+      4: "145",
+      5: "15",
+      6: "124",
+      7: "1245",
+      8: "125",
+      9: "24",
+      0: "245",
     };
 
     this.utf8Dict = {};
@@ -48,29 +49,29 @@ class BrailBelt {
 
   decodeString(toDecode) {
     if (typeof toDecode !== "string") {
-      throw new Error(
-        `${toDecode} should be in string format, not ${typeof toDecode}`
-      );
+      throw new Error(`${toDecode} should be in string format`);
     }
+
     let decodedString = "";
-    let numDetectedFlag = false;
+    let numMode = false;
     let words = toDecode.split(" ");
 
-    for (let i = 0; i < words.length; i++) {
-      let seq = words[i];
-
+    for (let seq of words) {
       if (seq === "3456") {
-        numDetectedFlag = true;
+        numMode = true; // Enable number mode
         continue;
       }
 
-      let key = numDetectedFlag ? `3456 ${seq}` : seq;
-      numDetectedFlag = false;
-
-      if (seq === "") {
+      if (numMode && Object.values(this.brailleDict).includes(seq)) {
+        let number = Object.keys(this.brailleDict).find(
+          (key) => this.brailleDict[key] === seq
+        );
+        decodedString += number;
+      } else if (seq === "") {
         decodedString += " ";
       } else {
-        decodedString += this.utf8Dict[key] || "?";
+        decodedString += this.utf8Dict[seq] || "?";
+        numMode = false; // Reset number mode after a non-number
       }
     }
     return decodedString;
@@ -78,26 +79,44 @@ class BrailBelt {
 
   encodeString(toEncode) {
     if (typeof toEncode !== "string") {
-      throw new Error(
-        `${toEncode} should be in string format, not ${typeof toEncode}`
-      );
+      throw new Error(`${toEncode} should be in string format`);
     }
+
     let encodedString = "";
-    for (let letter of toEncode.toLowerCase()) {
-      if (this.brailleDict.hasOwnProperty(letter)) {
-        encodedString += this.brailleDict[letter] + " ";
+    let numMode = false;
+
+    for (let i = 0; i < toEncode.length; i++) {
+      let letter = toEncode[i].toLowerCase();
+
+      if (!isNaN(letter) && letter !== " ") {
+        // It's a number
+        if (!numMode) {
+          encodedString += "3456 "; // Add number indicator
+          numMode = true;
+        }
+        encodedString += this.brailleDict[letter]; // No extra space for numbers
       } else {
-        encodedString += letter + " ";
+        numMode = false; // Reset number mode
+        encodedString += this.brailleDict[letter]
+          ? this.brailleDict[letter] + " "
+          : letter + " ";
       }
     }
+
     return encodedString.trim();
   }
 }
 
 const braille = new BrailBelt();
-let text_being_carried = "    try to click here 124";
+let text_being_carried = "    try to click here 10";
 let currentIndex = 0;
 let visibleTrackSize = 9;
+
+function preprocessText(text) {
+  return text.replace(/\d/g, (match) => `#${match}`);
+}
+
+text_being_carried = preprocessText(text_being_carried);
 
 function display_a_letter_in_brail(numbers) {
   let all_dots = document.getElementsByClassName("braildot");
@@ -111,12 +130,13 @@ function display_a_letter_in_brail(numbers) {
     let target_dot = document.getElementById("braildot" + num);
     if (target_dot) {
       target_dot.style.backgroundColor = "white";
+      // console.log(num)
     }
   }
+  // console.log("displayed" , numbers)
 }
 
 function prepare_track(full_text) {
-  // Find the first non-space character for initial centering
   let firstLetterIndex = full_text.search(/\S/);
   currentIndex = firstLetterIndex >= 0 ? firstLetterIndex : 0;
   updateDisplay();
@@ -126,7 +146,6 @@ function updateDisplay() {
   let track = new Array(visibleTrackSize).fill(" ");
   let middleIndex = Math.floor(visibleTrackSize / 2);
 
-  // Adjust startIndex to ensure currentIndex is at the center
   let startIndex = Math.max(0, currentIndex - middleIndex);
   let endIndex = Math.min(
     text_being_carried.length,
@@ -141,7 +160,6 @@ function updateDisplay() {
         : " ";
   }
 
-  // Update displayed letters
   for (let i = 0; i < visibleTrackSize; i++) {
     let button_target = document.getElementById("brail-english-letter-" + i);
     if (button_target) {
@@ -149,9 +167,22 @@ function updateDisplay() {
     }
   }
 
-  // Update Braille representation
   let currentMiddleLetter = text_being_carried[currentIndex] || " ";
-  let brailleCode = braille.encodeString(currentMiddleLetter);
+  let brailleCode;
+
+  if (currentMiddleLetter === "#") {
+    brailleCode = "3456"; // Ensure each digit is handled correctly
+    // console.log("Number sign detected, setting braille code to:", brailleCode);
+  } else if (
+    !isNaN(currentMiddleLetter) &&
+    currentIndex > 0 &&
+    text_being_carried[currentIndex - 1] === "#"
+  ) {
+    brailleCode = braille.brailleDict[currentMiddleLetter]; // Direct lookup
+  } else {
+    brailleCode = braille.encodeString(currentMiddleLetter);
+  }
+
   display_a_letter_in_brail(brailleCode);
 }
 
