@@ -2,9 +2,11 @@ import tensorflow as tf
 import numpy as np
 import cv2
 import os
+from browse.logger_config import logger
 
 class ASL_CNN:
     def __init__(self,model_path):
+        logger.warning(f'loading the model , {model_path}')
         self.class_labels = [str(i) for i in range(10)] + [chr(i) for i in range(ord('A'), ord('Z') + 1)]
         self.model = tf.keras.models.load_model(model_path)
 
