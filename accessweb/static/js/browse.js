@@ -473,5 +473,78 @@ button.addEventListener("click", function () {
   startAsession(userid);
 });
 
+const camera_on_button = document.getElementById("turn-on-camera");
+const sign_video = document.getElementById("sign-video");
+const canvas = document.createElement("canvas"); 
+let camera_stream = null; 
+let captureInterval = null; 
+
+async function requestCameraPermission() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream.getTracks().forEach((track) => track.stop()); // Immediately stop to just check permission
+    return true; // Permission granted
+  } catch (error) {
+    console.error("Camera access denied or blocked: ", error);
+    alert("Please allow camera access in your browser settings.");
+    return false; // Permission denied
+  }
+}
+
+camera_on_button.addEventListener("click", async function () {
+  if (!camera_stream) {
+    // Check for permission first
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) return;
+
+    // Turn ON camera
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((videoStream) => {
+        camera_stream = videoStream;
+        sign_video.srcObject = camera_stream;
+        sign_video.play(); // Ensure the video starts playing
+        camera_on_button.textContent = "Stop Camera";
+      })
+      .catch((error) => {
+        console.error("Error accessing the camera: ", error);
+      });
+  } else {
+    // Turn OFF camera
+    camera_stream.getTracks().forEach((track) => track.stop()); // Stop all tracks
+    sign_video.srcObject = null; // Remove video feed
+    camera_stream = null; // Reset stream variable
+    camera_on_button.textContent = "Start Camera";
+  }
+});
+
+function captureFrame() {
+  if (
+    !camera_stream ||
+    sign_video.videoWidth === 0 ||
+    sign_video.videoHeight === 0
+  )
+    return;
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = sign_video.videoWidth;
+  canvas.height = sign_video.videoHeight;
+  ctx.drawImage(sign_video, 0, 0, canvas.width, canvas.height);
+
+  const base64Data = canvas.toDataURL("image/png");
+  console.log("Captured Base64:", base64Data); // Log Base64 output
+}
+
+sign_video.addEventListener("mouseenter", function () {
+  if (!captureInterval) {
+    captureInterval = setInterval(captureFrame, 3000); // Capture every 3 seconds
+  }
+});
+
+sign_video.addEventListener("mouseleave", function () {
+  clearInterval(captureInterval);
+  captureInterval = null;
+});
+
 detect_pressed_key();
 fetchCookie();
