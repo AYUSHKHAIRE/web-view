@@ -533,6 +533,14 @@ function captureFrame() {
 
   const base64Data = canvas.toDataURL("image/png");
   console.log("Captured Base64:", base64Data); // Log Base64 output
+  sessionSocket.send(
+    JSON.stringify({
+      user_id: getUserId(),
+      special: "recognize_sign",
+      message: "Hello ! have you read the sign ?",
+      base64_cam : base64Data
+    })
+  );
 }
 
 sign_video.addEventListener("mouseenter", function () {
