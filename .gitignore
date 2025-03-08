@@ -5,3 +5,5 @@
 /accessweb/browse/docker_containers
 /accessweb/browse/chrome/credscloud.json
 accessweb/browse/chrome/.env
+
+/accessweb/browse/assets/
