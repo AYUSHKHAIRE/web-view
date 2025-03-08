@@ -5,4 +5,4 @@
 ![Web-View Architecture](https://github.com/AYUSHKHAIRE/web-view/blob/main/Screenshot%20from%202025-02-27%2021-53-05.png)
 
 # The notebook for CNN for sign language 
-![notebook](https://www.kaggle.com/code/ayushkhaire/asl-cnn)
+[notebook](https://www.kaggle.com/code/ayushkhaire/asl-cnn)
