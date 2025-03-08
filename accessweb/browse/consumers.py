@@ -10,6 +10,8 @@ from browse.brailbelt import BrailBelt
 from browse.asl import ASL_CNN
 from accessweb.settings import BASE_DIR
 import os
+import base64
+import numpy as np
 
 '''
 I follow the international standard .
@@ -69,7 +71,7 @@ class WebSocketConsumer(
                     "user_id", 
                     "unknown"
                 )
-                logger.warning(data)
+                # logger.warning(data)
                 if message_type == "register":
                     response = {
                         "type": "register",
@@ -138,6 +140,19 @@ class WebSocketConsumer(
                         "message":data["message"]
                     }
                     logger.debug(f"Saying response by vision to user {user_id}")
+                elif message_type == "recognize_sign":
+                    base64_cam = data.get('base64_cam')
+                    logger.debug(f'{type(base64_cam)}')
+                    logger.debug(f'{base64_cam[:100]}')
+                    if "," in base64_cam:
+                        base64_cam = base64_cam.split(",")[1]  
+                    label , cords = A_CNN.predict_class_on_base64(base64_string=base64_cam)
+                    response = {
+                        "type": "recognize_sign",
+                        "label":label,
+                        "cords":cords
+                    }
+                    logger.debug(f"Saying recognize sign to user {user_id} {label} {cords}")
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
