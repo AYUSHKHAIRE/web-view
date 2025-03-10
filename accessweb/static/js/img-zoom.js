@@ -1,6 +1,5 @@
-// Get elements
 const imgContainer = document.querySelector(".img-container");
-const img = document.querySelector(".img-container img");
+const s_img = document.querySelector(".img-container img");
 const lens = document.querySelector(".lens");
 
 // Controls
@@ -11,29 +10,29 @@ const fontRange = document.getElementById("font_range");
 
 // Default zoom level
 let zoom = parseFloat(zoomRange.value);
-let lastCursorPos = { x: img.width / 2, y: img.height / 2 };
+let lastCursorPos = { x: s_img.width / 2, y: s_img.height / 2 };
 
 // Create a canvas element to copy the image
-const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+const ln_canvas = document.createElement("canvas");
+const ctx = ln_canvas.getContext("2d");
 
 // Function to draw image onto the canvas
 function updateCanvas() {
-  const imgWidth = img.width;
-  const imgHeight = img.height;
+  const imgWidth = s_img.width;
+  const imgHeight = s_img.height;
 
   // Resize canvas to match the image size
-  canvas.width = imgWidth;
-  canvas.height = imgHeight;
+  ln_canvas.width = imgWidth;
+  ln_canvas.height = imgHeight;
 
   // Draw the image onto the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+  ctx.clearRect(0, 0, ln_canvas.width, ln_canvas.height);
+  ctx.drawImage(s_img, 0, 0, imgWidth, imgHeight);
 }
 
 // Get cursor position relative to image
 function getCursor(event) {
-  let bounds = img.getBoundingClientRect();
+  let bounds = s_img.getBoundingClientRect();
   let x = event.clientX - bounds.left;
   let y = event.clientY - bounds.top;
   return { x, y };
@@ -51,10 +50,12 @@ function updateLens() {
   lens.style.display = "block";
 
   // Update lens background using the canvas image
-  lens.style.backgroundImage = `url(${canvas.toDataURL()})`; // Use canvas image as background
+  lens.style.backgroundImage = `url(${ln_canvas.toDataURL()})`; // Use canvas image as background
 
   // Apply zoom level to background size
-  lens.style.backgroundSize = `${img.width * zoom}px ${img.height * zoom}px`;
+  lens.style.backgroundSize = `${s_img.width * zoom}px ${
+    s_img.height * zoom
+  }px`;
 
   // Update lens position immediately after zoom
   moveLens(lastCursorPos); // Ensure lens updates correctly
@@ -77,10 +78,10 @@ function moveLens(pos) {
   // Ensure lens stays within image bounds
   if (lensLeft < 0) lensLeft = 0;
   if (lensTop < 0) lensTop = 0;
-  if (lensLeft + lens.offsetWidth > img.width)
-    lensLeft = img.width - lens.offsetWidth;
-  if (lensTop + lens.offsetHeight > img.height)
-    lensTop = img.height - lens.offsetHeight;
+  if (lensLeft + lens.offsetWidth > s_img.width)
+    lensLeft = s_img.width - lens.offsetWidth;
+  if (lensTop + lens.offsetHeight > s_img.height)
+    lensTop = s_img.height - lens.offsetHeight;
 
   lens.style.left = `${lensLeft}px`;
   lens.style.top = `${lensTop}px`;
@@ -94,10 +95,13 @@ function moveLens(pos) {
 
 // Enable zoom effect when mouse moves over the image
 function enableZoom() {
-  imgContainer.addEventListener("mousemove", (event) => {
-    lens.style.display = "block";
-    moveLens(getCursor(event));
-  });
+  let lens_allow_value = document.querySelector("#checkvisuals").value;
+  if (lens_allow_value.checked) {    
+    imgContainer.addEventListener("mousemove", (event) => {
+      lens.style.display = "block";
+      moveLens(getCursor(event));
+    });
+  }
 
   imgContainer.addEventListener("mouseleave", () => {
     lens.style.display = "none";
@@ -105,7 +109,7 @@ function enableZoom() {
 
   // Update the canvas and lens background on image load and src change
   const observer = new MutationObserver(() => {
-    img.onload = () => {
+    s_img.onload = () => {
       updateCanvas();
       updateLens();
     };
@@ -113,7 +117,7 @@ function enableZoom() {
     updateLens(); // Ensure lens updates immediately
   });
 
-  observer.observe(img, { attributes: true, attributeFilter: ["src"] });
+  observer.observe(s_img, { attributes: true, attributeFilter: ["src"] });
 }
 
 // Event Listeners for UI Controls
