@@ -1,99 +1,109 @@
 {% load static %}
 
 <!DOCTYPE html>
-<!-- Coding By CodingNepal - youtube.com/@codingnepal -->
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sidebar Menu | CodingNepal</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <!-- Linking Google fonts for icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-</head>
-<body>
-  <aside class="sidebar collapsed ">
-    <header class="sidebar-header">
-      <a href="#" class="header-logo">
-        <img src="logo.png" alt="CodingNepal">
-      </a>
-      <button class="toggler sidebar-toggler">
-        <span class="material-symbols-rounded">chevron_left</span>
-      </button>
-    </header>
-    <nav class="sidebar-nav">
-      <!-- Primary top nav -->
-      <ul class="nav-list primary-nav">
-        <li class="nav-item">
-          <a href="{% url 'browse' %}" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">dashboard</span>
-            <span class="nav-label">Browse</span>
-          </a>
-          <span class="nav-tooltip">Browse</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">calendar_today</span>
-            <span class="nav-label">Calendar</span>
-          </a>
-          <span class="nav-tooltip">Calendar</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">notifications</span>
-            <span class="nav-label">Notifications</span>
-          </a>
-          <span class="nav-tooltip">Notifications</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">group</span>
-            <span class="nav-label">Team</span>
-          </a>
-          <span class="nav-tooltip">Team</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">insert_chart</span>
-            <span class="nav-label">Analytics</span>
-          </a>
-          <span class="nav-tooltip">Analytics</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">star</span>
-            <span class="nav-label">Bookmarks</span>
-          </a>
-          <span class="nav-tooltip">Bookmarks</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">settings</span>
-            <span class="nav-label">Settings</span>
-          </a>
-          <span class="nav-tooltip">Settings</span>
-        </li>
-      </ul>
-      <!-- Secondary bottom nav -->
-      <ul class="nav-list secondary-nav">
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">account_circle</span>
-            <span class="nav-label">Profile</span>
-          </a>
-          <span class="nav-tooltip">Profile</span>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <span class="nav-icon material-symbols-rounded">logout</span>
-            <span class="nav-label">Logout</span>
-          </a>
-          <span class="nav-tooltip">Logout</span>
-        </li>
-      </ul>
-    </nav>
-  </aside>
-  {% block content %}{% endblock content %}
-  <script src="{% static '/js/script.js' %}"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessweb | Break the barriers!</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLXVfU56RWB3dFYbOsfPhddU_z5rnkHt0Tbw&s"
+    />
+
+    <!-- Google Fonts for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+  </head>
+  <body>
+    <aside class="sidebar collapsed">
+      <header class="sidebar-header">
+        <a href="{% url 'index' %}" class="header-logo">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLXVfU56RWB3dFYbOsfPhddU_z5rnkHt0Tbw&s"
+            alt="logo"
+          />
+        </a>
+        <button class="toggler sidebar-toggler">
+          <span class="material-symbols-rounded">chevron_left</span>
+        </button>
+      </header>
+
+      <nav class="sidebar-nav">
+        <!-- Primary Navigation -->
+        <ul class="nav-list primary-nav">
+          <li class="nav-item">
+            <a href="{% url 'browse' %}" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">web</span>
+              <span class="nav-label">Browse</span>
+            </a>
+            <span class="nav-tooltip">Browse</span>
+          </li>
+
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">chat</span>
+              <span class="nav-label">Discussions</span>
+            </a>
+            <span class="nav-tooltip">Discussions</span>
+          </li>
+
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <span class="nav-icon material-symbols-rounded"
+                >account_circle</span
+              >
+              <span class="nav-label">Profile</span>
+            </a>
+            <span class="nav-tooltip">Profile</span>
+          </li>
+
+          <li class="nav-item">
+            <a href="{% url 'logout' %}" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">logout</span>
+              <span class="nav-label">Logout</span>
+            </a>
+            <span class="nav-tooltip">Logout</span>
+          </li>
+
+          {% if user.is_superuser %}
+          <li class="nav-item">
+            <a href="{% url 'admin:index' %}" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">dashboard</span>
+              <span class="nav-label">Admin</span>
+            </a>
+            <span class="nav-tooltip">Admin</span>
+          </li>
+          {% endif %} {% else %}
+          <li class="nav-item">
+            <a href="{% url 'login' %}" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">login</span>
+              <span class="nav-label">Log in</span>
+            </a>
+            <span class="nav-tooltip">Log in</span>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'register' %}" class="nav-link">
+              <span class="nav-icon material-symbols-rounded">person_add</span>
+              <span class="nav-label">Register</span>
+            </a>
+            <span class="nav-tooltip">Register</span>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </aside>
+
+    {% block content %}{% endblock content %}
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
 </html>
