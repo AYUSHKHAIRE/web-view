@@ -51,7 +51,8 @@ let lastSentX = null;
 let lastSentY = null;
 
 function getCursor(event) {
-  let bounds = img.getBoundingClientRect();
+  let image = document.querySelector("#browser_screenshot")
+  let bounds = image.getBoundingClientRect();
   let x = event.clientX - bounds.left;
   let y = event.clientY - bounds.top;
   return { x, y };
