@@ -45,8 +45,8 @@ Accessweb can recognize text on web pages and force highlight it, making content
 ![text](/assets/general/4_identify_text_screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif)
 
 ## A Simple Braille Display for Visually Impaired Users
-For individuals who are blind but sensitive to light, Accessweb offers a Braille display using white circles that simulate Braille bumps. Users are encouraged to maximize their monitor brightness, turn off room lights, and position themselves close to the screen for the best experience. This is an innovative approach that, to our knowledge, has not been implemented elsewhere.
-
+For individuals who are blind but sensitive to light, Accessweb offers a Braille display using white circles that simulate Braille bumps. Users are encouraged to maximize their monitor brightness, turn off room lights, and position themselves close to the screen for the best experience. This is an innovative approach that, to our knowledge, has not been implemented elsewhere.The commit is [here]
+(https://github.com/AYUSHKHAIRE/web-view/commit/4a2090bb8757382cc50cd4b0bab6f59baa48cff0)
 ![braille](/assets/general/5_brail_supporter_screen-captureonline-video-cutter.com.mp4screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif)
 
 ## Conclusion
