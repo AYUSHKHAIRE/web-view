@@ -5,6 +5,8 @@ Accessweb is a web-based platform that aims to break accessibility barriers for 
 ## Demo
 [Watch on Youtube](https://www.youtube.com/watch?v=dwbIqAioSvM)
 
+[![Accessweb](https://img.youtube.com/vi/dwbIqAioSvM/0.jpg)](https://www.youtube.com/watch?v=dwbIqAioSvM)
+
 ## Index
 - [Project Features](#project-features)
 - [Real-time View and Session](#real-time-view-and-session)
