@@ -7,6 +7,11 @@ Accessweb is a web-based platform that aims to break accessibility barriers for 
 
 [![Accessweb](https://img.youtube.com/vi/dwbIqAioSvM/0.jpg)](https://www.youtube.com/watch?v=dwbIqAioSvM)
 
+<video controls width="500">
+  <source src="/assets/general/Meet%20Alex.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## Index
 - [Project Features](#project-features)
 - [Real-time View and Session](#real-time-view-and-session)
