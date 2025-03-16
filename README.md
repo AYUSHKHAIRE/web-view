@@ -1,9 +1,14 @@
 # Accessweb: Break the Barriers!
 
+**This is the part of my google solutions challange 2025 . AI for better tomorrow**
+
 Accessweb is a web-based platform that aims to break accessibility barriers for people with disabilities. The platform is designed to provide a seamless and inclusive experience, ensuring that everyone can access and use the web without any hurdles. It has the potential to be a game-changer in the field of accessibility, making the web more inclusive for all.
 
 ## Demo
 [Watch on Youtube](https://www.youtube.com/watch?v=dwbIqAioSvM)
+
+## View presentation on Canva
+[Canva Presentation link](https://www.canva.com/design/DAGh6HDkpGU/ZWyZ4-IbB-RDrhOOydJmiA/view?utm_content=DAGh6HDkpGU&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hfad01218d2)
 
 [![Accessweb](https://img.youtube.com/vi/dwbIqAioSvM/0.jpg)](https://www.youtube.com/watch?v=dwbIqAioSvM)
 
@@ -66,7 +71,7 @@ Accessweb has the potential to be a game-changer in accessibility, providing an 
 ## Web-View Architecture
 [See the architecture here](https://lucid.app/lucidspark/7044d1a6-f60a-4ab3-a537-eb9b786a9b12/edit?viewport_loc=-2639,-606,4644,2225,0_0&invitationId=inv_b43b5b8e-a2eb-4b9c-b0b5-8efc91c15dbc)
 
-![Web-View Architecture](assets/code/Screenshot%20from%202025-02-27%2021-53-05.png)
+![Web-View Architecture](assets/code/Screenshot%20from%202025-03-16%2021-28-15.png)
 
 ## Notebook for CNN for Sign Language
 [Notebook](https://www.kaggle.com/code/ayushkhaire/asl-cnn)
