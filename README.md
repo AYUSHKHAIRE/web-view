@@ -7,6 +7,10 @@ Accessweb is a web-based platform that aims to break accessibility barriers for 
 ## Demo
 [Watch on Youtube](https://www.youtube.com/watch?v=dwbIqAioSvM)
 
+## View presentation on Canva
+![Canva Presentation link](https://www.canva.com/design/DAGh6HDkpGU/ZWyZ4-IbB-RDrhOOydJmiA/view?utm_content=DAGh6HDkpGU&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hfad01218d2)
+[Canva Presentation link](https://www.canva.com/design/DAGh6HDkpGU/ZWyZ4-IbB-RDrhOOydJmiA/view?utm_content=DAGh6HDkpGU&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hfad01218d2)
+
 [![Accessweb](https://img.youtube.com/vi/dwbIqAioSvM/0.jpg)](https://www.youtube.com/watch?v=dwbIqAioSvM)
 
 <video controls width="500">
