@@ -4,6 +4,7 @@ import shutil
 import json
 from browse.logger_config import logger
 from accessweb.settings import BASE_DIR
+from dotenv import load_dotenv
 DOCKER_IMAGE = "selenium_capture"
 
 # control all sessions
@@ -42,6 +43,16 @@ class sessionManager():
                 cookie_file
             )
         auth_token = auth_token.get('cookie')
+        load_dotenv(
+            os.path.join(
+                path, 
+                '.env'
+            )
+        )
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_api_key:
+            logger.error("[ SESSION ] Gemini API key not found in environment variables.")
+            return
         try:
             result_check = subprocess.run(
                 [
@@ -86,7 +97,7 @@ class sessionManager():
                             "-e", f"CONTAINER_USER_ID={user_id}" ,
                             "-e", f"CONTAINER_USER_AUTH_TOKEN={auth_token}" ,
                             "-e", f"SCREENDEX={screendex}" ,
-                            "-e", f"GEMINI_API_KEY=AIzaSyA1GonAeuc_Ym0ZGmUjz3QqGAXh_MInVW8" ,
+                            "-e", f"GEMINI_API_KEY={gemini_api_key}" ,
                             DOCKER_IMAGE
                     ], 
                         stdout=subprocess.PIPE, 
