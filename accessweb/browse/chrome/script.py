@@ -1207,6 +1207,8 @@ auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
 screendex = os.environ.get('SCREENDEX')
 gemini_api_key = os.environ.get('GEMINI_API_KEY')
 
+logger.warning(gemini_api_key)
+
 screendex = screendex.replace('px', '')
 screen_width = int(float(
     screendex.split('X')[0])
