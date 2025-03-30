@@ -17,16 +17,26 @@
 </div>
 
 {% if user.is_authenticated %}
-<div class="searchbar">
-  <input
-    type="search"
-    name="search"
-    id="search"
-    class="search"
-    placeholder="Search or enter a URL ..."
-    value="https://www.kaggle.com/"
-  />
-  <button id="search_btn" class="searchbtn">Search</button>
+<div class="browsercontroller">
+  <div class="subbrowsercontroller">
+    <div class="searchbar">
+      <input
+        type="search"
+        name="search"
+        id="search"
+        class="search"
+        placeholder="Search or enter a URL ..."
+        value="https://www.kaggle.com/"
+      />
+    </div>
+  </div>
+  <div class="subbrowsercontroller">
+    <div class="typerforbrowser subbrowsercontroller" style="max-width: 300px;">
+      <h3>key board typing :</h3>
+      <input type="checkbox" name="type_kb" id="type_kb" unchecked />
+    </div>
+    <button id="search_btn" class="searchbtn">Search</button>
+  </div>
 </div>
 <div class="imagecon" id="imagecon">
   <div class="img-container">
@@ -52,7 +62,9 @@
       <button onclick="toggleChat('aichat')">chat with AI</button>
       <button onclick="toggleChat('highlight-chat-box')">Highlight text</button>
       <button onclick="toggleChat('brail-reader')">Brail reader</button>
-      <button onclick="toggleChat('sign-recognizer')">Sign language recognizer</button>
+      <button onclick="toggleChat('sign-recognizer')">
+        Sign language recognizer
+      </button>
     </div>
   </div>
   <div id="lens" class="chat-box">
@@ -140,7 +152,8 @@
       </button>
     </div>
   </div>
-  <div id="brail-reader"
+  <div
+    id="brail-reader"
     class="chat-box brail-reader"
     style="width: 70vw; height: 70vh; top: 100px"
   >
@@ -201,7 +214,8 @@
       </div>
     </div>
   </div>
-    <div id="sign-recognizer"
+  <div
+    id="sign-recognizer"
     class="chat-box sign-recognizer"
     style="width: 70vw; height: 70vh; top: 100px"
   >
@@ -212,15 +226,15 @@
       <div class="mainbrailcolordiv">
         <div class="sign-lang-screen">
           <h1>Recognize sign language</h1>
-          <button id="turn-on-camera" >Start Camera</button>
+          <button id="turn-on-camera">Start Camera</button>
           <video id="sign-video" autoplay></video>
-          <canvas id="sign-canvas" style="display: none;"></canvas>
+          <canvas id="sign-canvas" style="display: none"></canvas>
         </div>
       </div>
     </div>
   </div>
-  
-  {% if user.is_authenticated %}    
+
+  {% if user.is_authenticated %}
   <script src="{% static 'js/browse.js' %}"></script>
   <script src="{% static 'js/img-zoom.js' %}"></script>
   <script src="{% static 'js/brail.js' %}"></script>
@@ -229,7 +243,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
   {% endif %}
-    
+
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css"
