@@ -25,6 +25,8 @@ sign_model_path = os.path.join(BASE_DIR ,"browse/assets/asl_cnn_model.h5")
 A_CNN = ASL_CNN(model_path=sign_model_path)
 logger.warning("sign language model load complete")
 
+TASK_POOL = {}
+
 class WebSocketConsumer(
     AsyncWebsocketConsumer
 ):
@@ -156,9 +158,10 @@ class WebSocketConsumer(
                 elif message_type == "start_stream":
                     if not self.streaming:
                         self.streaming = True
-                        asyncio.create_task(
+                        task = asyncio.create_task(
                             self.read_and_stream()
                         )
+                        TASK_POOL[self.room_name] = task
                         response = {
                             "type": "info",
                             "message": "Started streaming."
@@ -171,11 +174,23 @@ class WebSocketConsumer(
                         }
                 elif message_type == "stop_stream":
                     self.streaming = False
+                    task = TASK_POOL.pop(self.room_name, None)  # Remove & get task safely
+                    if task:
+                        task.cancel()
+                        try:
+                            await task  # Ensure proper cancellation
+                        except asyncio.CancelledError:
+                            logger.debug(f"Task for user {user_id} was successfully cancelled.")
+                        logger.debug(f"Cancelled streaming task for user {user_id}")
+                    else:
+                        logger.warning(f"No streaming task found for user {user_id}")
                     response = {
-                        "type": "info",
-                        "message": "Stopped streaming."
+                        "type": "stream_stopped",
+                        "message": "Stopped streaming.",
+                        "status": "OK"
                     }
                     logger.debug(f"Stopped streaming for user {user_id}")
+
                 else:
                     response = {
                         "type": "error",
