@@ -166,7 +166,7 @@ function estabilish_socket(user_id) {
         })
       );
     }, 1000);
-    button.textContent = "connected socket .";
+    button.textContent = "Session started .";
   };
   sessionSocket.onmessage = async (event) => {
     try {
@@ -303,19 +303,25 @@ document
   });
 
 function detect_pressed_key() {
-  document.addEventListener("keypress", () => {
+  document.addEventListener("keydown", (event) => {
     const key = event.key;
     console.log("Key pressed:", key);
-    const message = {
-      user_id: getUserId(),
-      special: "keypress",
-      message: {
-        key: key,
-      },
-    };
-    sessionSocket.send(JSON.stringify(message));
+
+    let is_allow = document.getElementById("type_kb").checked; // Ensure the checkbox is checked
+    if (is_allow) {
+      console.log("Sending keypress to server, allowed");
+      const message = {
+        user_id: getUserId(),
+        special: "keypress",
+        message: {
+          key: key,
+        },
+      };
+      sessionSocket.send(JSON.stringify(message));
+    }
   });
 }
+
 
 function display_LLM_response(data) {
   let llmcon = document.getElementById("LLM-conversation");
