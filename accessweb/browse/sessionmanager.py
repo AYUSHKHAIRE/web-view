@@ -125,7 +125,7 @@ class sessionManager():
             logger.error(f"[ SESSION ] Return code: {e.returncode}")
             logger.error(f"[ SESSION ] Error output: {e.stderr}")
 
-    def terminate(
+    def stop_docker(
         self,
         user_id,
         all = None
@@ -134,5 +134,25 @@ class sessionManager():
             for item in self.shared_memory_pool.items():
                 item.close()
                 item.unlink()
-        self.shared_memory_pool[f'sms_{user_id}'].close()
-        self.shared_memory_pool[f'sms_{user_id}'].unlink()
+        container_name = f'docker_con_{user_id}'
+        try:
+            result = subprocess.run(
+                [
+                    "docker", 
+                    "rm", 
+                    "-f",
+                    container_name
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True
+            )
+            output = result.stdout.strip()
+            logger.debug(f"[ SESSION ] Container '{container_name}' terminated successfully.")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"[ SESSION ] Failed to terminate Docker container '{container_name}'.")
+            logger.error(f"[ SESSION ] Command: {e.cmd}")
+            logger.error(f"[ SESSION ] Return code: {e.returncode}")
+            logger.error(f"[ SESSION ] Error output: {e.stderr}")
+            return
