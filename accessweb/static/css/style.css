@@ -19,6 +19,7 @@ body {
   background: #151a2d;
   height: calc(100vh - 32px);
   transition: all 0.4s ease;
+  z-index: 1000;
 }
 .sidebar.collapsed {
   width: 85px;
@@ -232,6 +233,11 @@ search::placeholder {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
 }
 
 h1 {
