@@ -13,6 +13,11 @@ urlpatterns = [
         name=''
     ),
     path(
+        'stop_session/<str:user_id>/',
+        views.stop_session, 
+        name=''
+    ),
+    path(
         'getcookkie/', 
         views.getCookie, 
         name=''
