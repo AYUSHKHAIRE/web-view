@@ -51,7 +51,7 @@ let lastSentX = null;
 let lastSentY = null;
 
 function getCursor(event) {
-  let image = document.querySelector("#browser_screenshot")
+  let image = document.querySelector("#browser_screenshot");
   let bounds = image.getBoundingClientRect();
   let x = event.clientX - bounds.left;
   let y = event.clientY - bounds.top;
@@ -101,7 +101,11 @@ repeatAndSendHover();
 
 function displayimage(imagestr) {
   const imageContainer = document.querySelector("#browser_screenshot");
-  imageContainer.src = `data:image/png;base64, ${imagestr}`;
+  if (imagestr.length > 100) {
+    imageContainer.src = `data:image/png;base64, ${imagestr}`;
+  } else {
+    imageContainer.src = `https://cdn.dribbble.com/userupload/19849667/file/original-95fabf09850cd28e919f3e156fca3cea.gif`;
+  }
 }
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -167,6 +171,10 @@ function estabilish_socket(user_id) {
       );
     }, 1000);
     button.textContent = "Session started .";
+    let stop_button = document.querySelector("#stopSessionButton");
+    stop_button.style.display = "block";
+    let start_button = document.querySelector("#startSessionButton");
+    start_button.style.display = "none";
   };
   sessionSocket.onmessage = async (event) => {
     try {
@@ -207,6 +215,34 @@ function estabilish_socket(user_id) {
             "browser_screenshot",
             "imagehighlightoverlay"
           );
+        } else if (data.type === "text_response") {
+          console.log(data);
+        } else if (data.type === "stream_stopped") {
+          console.log("stream stopped");
+          const stop_url = `${window.location.origin}/browse/stop_session/${user_id}/`;
+          fetch(stop_url, {
+            method: "GET",
+          })
+            .then((response) => response.json()) // Parse JSON response
+            .then((data) => {
+              if (data.status === "OK") {
+                // Check JSON field correctly
+                console.log("Session stopped successfully");
+                let stop_button = document.querySelector("#stopSessionButton");
+                button.textContent = "Session stopped .";
+                stop_button.style.display = "none";
+                let start_button = document.querySelector(
+                  "#startSessionButton"
+                );
+                start_button.style.display = "block";
+                start_button.textContent = "start session";
+                let screen = document.getElementById("browser_screenshot");
+                screen.src = `https://cdn.dribbble.com/userupload/19849667/file/original-95fabf09850cd28e919f3e156fca3cea.gif`;
+              } else {
+                console.error("Failed to stop session:", data);
+              }
+            })
+            .catch((error) => console.error("Fetch error:", error));
         } else {
           console.warn("Unknown message type or missing data:", data);
         }
@@ -274,8 +310,7 @@ function send_chat_source_to_llm(actual_input) {
     JSON.stringify({
       user_id: getUserId(),
       special: "LLM_ask_a_text",
-      message:
-        actual_input,
+      message: actual_input,
     })
   );
   let cb = document.querySelector("#ai-chat");
@@ -321,7 +356,6 @@ function detect_pressed_key() {
     }
   });
 }
-
 
 function display_LLM_response(data) {
   let llmcon = document.getElementById("LLM-conversation");
@@ -416,7 +450,7 @@ function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
   });
 }
 
-let max_highlight = 5
+let max_highlight = 5;
 function send_request_for_highlight() {
   console.log("sending request for highlight");
   const highlight_con = document.getElementById("imagehighlightoverlay");
@@ -429,13 +463,11 @@ function send_request_for_highlight() {
         JSON.stringify({
           user_id: getUserId(),
           special: "vision_ask_a_vision",
-          message:
-            "Hello ! have you read the message ?",
+          message: "Hello ! have you read the message ?",
         })
       );
       highlight_button.textContent = "remove highlight";
-    }
-    else {
+    } else {
       highlight_con.style.display = "block";
       highlight_button.textContent = "limit over . cannot highlight more .";
     }
@@ -444,6 +476,29 @@ function send_request_for_highlight() {
     highlight_button.textContent = "show highlight";
   }
 }
+
+function stop_stream() {
+  sessionSocket.send(
+    JSON.stringify({
+      user_id: getUserId(),
+      special: "stop_stream",
+    })
+  );
+  console.log("stopped stream , consulting threads");
+  let screen = document.getElementById("browser_screenshot");
+  screen.src = `https://cdn.dribbble.com/userupload/19849667/file/original-95fabf09850cd28e919f3e156fca3cea.gif`;
+}
+
+// stop button
+const stop_button = document.querySelector("#stopSessionButton");
+stop_button.addEventListener("click", function () {
+  stop_stream();
+  button.textContent = "Session stopped .";
+  setTimeout(() => {
+    sessionSocket.close();
+    console.log("Session stopped.");
+  }, 3000);
+});
 
 // Attach event listener
 const search_button = document.querySelector("#search_btn");
@@ -482,9 +537,9 @@ button.addEventListener("click", function () {
 
 const camera_on_button = document.getElementById("turn-on-camera");
 const sign_video = document.getElementById("sign-video");
-const canvas = document.createElement("canvas"); 
-let camera_stream = null; 
-let captureInterval = null; 
+const canvas = document.createElement("canvas");
+let camera_stream = null;
+let captureInterval = null;
 
 async function requestCameraPermission() {
   try {
@@ -545,7 +600,7 @@ function captureFrame() {
       user_id: getUserId(),
       special: "recognize_sign",
       message: "Hello ! have you read the sign ?",
-      base64_cam : base64Data
+      base64_cam: base64Data,
     })
   );
 }
