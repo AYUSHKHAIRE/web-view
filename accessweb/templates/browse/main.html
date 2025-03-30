@@ -7,6 +7,7 @@
 
       {% if user.is_authenticated %}
       <button id="startSessionButton">Start Session</button>
+      <button id="stopSessionButton" style = "background-color: red; display: none;" >Stop Session</button>
       {% else %}
       <a href="{% url 'login' %}">
         <button id="loginButton">Login</button>
@@ -42,9 +43,9 @@
   <div class="img-container">
     <img
       id="browser_screenshot"
-      src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"
+      src="https://cdn.dribbble.com/userupload/19849667/file/original-95fabf09850cd28e919f3e156fca3cea.gif"
       alt="Image will display here"
-      style="width: 100%; height: 100%"
+      style="width: 100%; height: 100% fit-content"
     />
     <div
       style="display: none"
