@@ -113,9 +113,28 @@ def start_session(
         user_id=user_id
     )
     time.sleep(0.1)
-    data = MM.read_memory(
+    jsn_to_send = {
+        'status':'OK'
+    }
+    return JsonResponse(
+        jsn_to_send
+    )
+    
+@login_required
+def stop_session(
+    request,
+    user_id,
+):
+    time.sleep(0.1)
+    logger.debug(f"received and passed {user_id} to main server and container . Attempting stopping ...")
+    SSM.stop_docker(
+        user_id=user_id,
+    )
+    time.sleep(0.1)
+    MM.clean_memory(
         user_id=user_id
     )
+    time.sleep(0.1)
     jsn_to_send = {
         'status':'OK'
     }
