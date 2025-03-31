@@ -1,6 +1,8 @@
 {% extends "base.html" %} {% load static %} {% block content %}
 <div class="maincontainer">
-  <form class="container" method="post" action="{% url 'register' %}">
+  <form class="container" method="post" action="{% url 'register' %}"
+  style="height: 100vh; display: flex; justify-content: center; align-items: center;"
+  >
     <h1>Register</h1>
     <!-- <img class="logo" src="{% static 'images/logo.jpeg' %}" alt="" srcset="" /> -->
     {% csrf_token %}
