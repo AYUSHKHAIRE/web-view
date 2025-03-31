@@ -315,6 +315,13 @@ function send_chat_source_to_llm(actual_input) {
   );
   let cb = document.querySelector("#ai-chat");
   cb.textContent = "send";
+  cb.disabled = false;
+  let new_div = document.createElement("div");
+  new_div.classList.add("chat-outgoing", "chat");
+  new_div.innerHTML = actual_input;
+  let llmcon = document.getElementById("LLM-conversation");
+  llmcon.appendChild(new_div);
+  llmcon.scrollTop = llmcon.scrollHeight;
   console.log("sending chat source to llm");
 }
 
@@ -357,6 +364,13 @@ function detect_pressed_key() {
   });
 }
 
+function speakText(text) {
+  const synth = window.speechSynthesis;
+  const utterance = new SpeechSynthesisUtterance(text);
+  synth.speak(utterance);
+  console.log("Speaking:", text);
+}
+
 function display_LLM_response(data) {
   let llmcon = document.getElementById("LLM-conversation");
   let newmessage;
@@ -369,16 +383,33 @@ function display_LLM_response(data) {
     console.error("Failed to parse message:", error, "Original:", data.message);
     return;
   }
+
   // Create a reply container
   let reply_container = document.createElement("div");
   reply_container.classList.add("incoming-chat", "chat");
+
   // Convert Markdown to HTML (assuming `marked` is available)
   let rawHTML = marked.parse(newmessage);
   reply_container.innerHTML = rawHTML + "<br>";
-  // Append to chat UI
+
+  // Create a speaker icon button
+  let speakerButton = document.createElement("button");
+  speakerButton.classList.add("speaker-button");
+  speakerButton.innerHTML = "📢";
+
+  // Use "click" event to trigger speech
+  speakerButton.addEventListener("click", () => {
+    speakText(newmessage);
+  });
+
+  // Append elements to chat UI
+  reply_container.appendChild(speakerButton);
   llmcon.appendChild(reply_container);
+  llmcon.scrollTop = llmcon.scrollHeight;
+
   console.log("All LLM responses displayed with Markdown.");
 }
+
 
 function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
   console.log("Received textData (raw):", textData);
