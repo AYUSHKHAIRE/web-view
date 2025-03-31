@@ -7,7 +7,12 @@
 
       {% if user.is_authenticated %}
       <button id="startSessionButton">Start Session</button>
-      <button id="stopSessionButton" style = "background-color: red; display: none;" >Stop Session</button>
+      <button
+        id="stopSessionButton"
+        style="background-color: red; display: none"
+      >
+        Stop Session
+      </button>
       {% else %}
       <a href="{% url 'login' %}">
         <button id="loginButton">Login</button>
@@ -32,7 +37,7 @@
     </div>
   </div>
   <div class="subbrowsercontroller">
-    <div class="typerforbrowser subbrowsercontroller" style="max-width: 300px;">
+    <div class="typerforbrowser subbrowsercontroller" style="max-width: 300px">
       <h3>key board typing :</h3>
       <input type="checkbox" name="type_kb" id="type_kb" unchecked />
     </div>
@@ -59,11 +64,11 @@
 <div class="interactivewindows">
   <div class="buttonhandlers">
     <div class="buttons-browse">
-      <button onclick="toggleChat('lens')">Toggle Lens</button>
-      <button onclick="toggleChat('aichat')">chat with AI</button>
-      <button onclick="toggleChat('highlight-chat-box')">Highlight text</button>
-      <button onclick="toggleChat('brail-reader')">Brail reader</button>
-      <button onclick="toggleChat('sign-recognizer')">
+      <button id = "lens-button" onclick="toggleChat('lens')">Toggle Lens</button>
+      <button id = "aichat-button" onclick="toggleChat('aichat')">chat with AI</button>
+      <button id = "highlight-chat-box-button" onclick="toggleChat('highlight-chat-box')">Highlight text</button>
+      <button id = "brail-reader-button" onclick="toggleChat('brail-reader')">Brail reader</button>
+      <button id = "sign-recognizer-button" onclick="toggleChat('sign-recognizer')">
         Sign language recognizer
       </button>
     </div>
@@ -74,7 +79,14 @@
       <div id="vistool">
         <h2>Lens settings</h2>
         <div class="subtool">
-          <div style="display: flex;align-items: center; justify-content: center; text-align: center;" >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+            "
+          >
             <h4>Show the Lens :</h4>
             <input type="checkbox" name="checkvisuals" id="checkvisuals" />
           </div>
@@ -118,7 +130,7 @@
       </div>
     </div>
   </div>
-  <div id="aichat" class="chat-box" style="max-width:40%">
+  <div id="aichat" class="chat-box" style="max-width: 40%">
     <div class="chat-header" onclick="minimizeChat('aichat')">chat with AI</div>
     <div class="chat-content">
       <div class="chatBot">
@@ -257,15 +269,34 @@
     });
 
     function toggleChat(id) {
+      // Get the chat element using its ID
       let chat = document.getElementById(id);
-      chat.style.display =
-        chat.style.display === "none" || chat.style.display === ""
-          ? "block"
-          : "none";
+
+      // Check the current display style of the chat
+      if (chat.style.display === "none" || chat.style.display === "") {
+        // If the chat is hidden or its display style is not explicitly set, show it
+        chat.style.display = "block";
+        let monitor_button = document.getElementById(id + "-button");
+        old_text = monitor_button.textContent;
+        monitor_button.style.backgroundColor = "rgb(52, 152, 219)"
+        monitor_button.textContent = "close " + old_text;
+        monitor_button.style.color = "white";
+      } else {
+        // Otherwise, hide the chat
+        chat.style.display = "none";
+        let monitor_button = document.getElementById(id + "-button");
+        old_text = monitor_button.textContent;
+        monitor_button.style.backgroundColor = "rgb(255, 255, 255)"
+        monitor_button.textContent = old_text.replace("close ", "");
+        monitor_button.style.color = "#3498db";
+      }
     }
 
     function minimizeChat(id) {
+      // Get the chat element using its ID
       let chat = document.getElementById(id);
+
+      // Toggle the "minimized" class on the chat element
       chat.classList.toggle("minimized");
     }
   </script>
