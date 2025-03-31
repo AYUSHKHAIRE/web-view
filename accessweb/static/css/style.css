@@ -535,10 +535,18 @@ input[type="checkbox"]:checked::before {
 
 .chat-incoming {
   align-self: flex-start;
+  max-width: 40%;
 }
 
 .chat-incoming p {
   color: white;
+}
+
+.chat-outgoing{
+  align-self: flex-end;
+  max-width: 40%;
+  background-color: #3498db;
+  color: black;
 }
 
 .chat {
@@ -546,12 +554,11 @@ input[type="checkbox"]:checked::before {
   padding: 10px 14px;
   border-radius: 16px;
   font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(5px);
   display: flex;
   flex-direction: column;
   text-align: start;
-  overflow: scroll;
+  border: 2px solid #0073b1;
 }
 
 .chat-input {
