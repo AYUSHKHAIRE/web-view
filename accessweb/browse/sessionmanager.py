@@ -45,8 +45,10 @@ class sessionManager():
         auth_token = auth_token.get('cookie')
         load_dotenv(
             os.path.join(
-                path, 
-                '.env'
+            BASE_DIR, 
+            "browse",
+            "chrome",
+            ".env"
             )
         )
         gemini_api_key = os.getenv("GEMINI_API_KEY")
