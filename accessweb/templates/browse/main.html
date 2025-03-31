@@ -4,7 +4,7 @@
   <div class="maincontainer">
     <div class="container">
       <h1>Break the Barriers , {{request.user.username}} !</h1>
-
+      <h3>Click on the  "start session" 👇 button to start the session</h3>
       {% if user.is_authenticated %}
       <button id="startSessionButton">Start Session</button>
       <button
@@ -44,6 +44,16 @@
     <button id="search_btn" class="searchbtn">Search</button>
   </div>
 </div>
+<div class="themaininstruction container" >
+  <div class="theinstruction" style="min-width: 30%;;display: block;margin: auto;" >
+    <h3>Now , Your session has been started !  <br> You will see google's custom search bar . <br> But we wish you try our own way . <br> We have already took a sample website for you . it is kaggle . We already have entered it for you as well : <br> Please click on search button as it is , let us explore Kaggle ! 👉 <br> Kaggle website will open there . </h3>
+  </div>
+    <div class="theinstruction" style="min-width: 30%;;display: block;margin: auto;" >
+    <h2>We wish you should explore our AI features first . </h2>
+    <h3>Click on the "Chat with AI" button to start the interaction</h3>
+    <h3>You will get next instructions there .</h3>
+  </div>
+</div>
 <div class="imagecon" id="imagecon">
   <div class="img-container">
     <img
@@ -79,6 +89,9 @@
       <div id="vistool">
         <h2>Lens settings</h2>
         <div class="subtool">
+          <div class="viewlensinfo" style="width: 300px;" >
+            We help you to view the website on ULTRA zoom , with easiest possible way , adjust size and depth of lens . Please click on the following square box to see the lens in action 👇.<br />
+          </div>
           <div
             style="
               display: flex;
@@ -139,7 +152,24 @@
         </header>
         <ul class="chatbox" id="LLM-conversation">
           <li class="chat-incoming chat">
-            <p>Hey! How can I assist you today?</p>
+            <p>Hey! How can I assist you today? I hope you have started the session and reached to kaggle website . If you are not , then please click on "start session" , then wait for a few seconds . You will see a custom search engine interface by Google , now , click on search near kaggle.com input box . </p>
+          </li>
+          <li class="chat-incoming chat">
+            <p>For your convinience , We are giving you some sample prompts regarding kaggle . You do not need to type , just follow step 1 , step 2 , step 3 , and so on , as a sample . </p>
+            <div class="prompt-for-ai">
+              STEP 1 : What you see in the website ?
+            </div>
+            <div class="prompt-for-ai">
+              STEP 2 : Can you please click on models button if there is any ?
+            </div>
+            <div class="prompt-for-ai">
+              STEP 3 : Can you please search for gemini model ?
+            </div>
+            <li class="chat-incoming chat" >
+            copy and paste the STEP 1 text in the input box and click on "start chat" button . wait till AI take action , then , copy paste and send STEP 2 , then again wait for AI action , and then step 3 .<br />
+            <div class="prompt-for-ai">
+              STEP 4 : Explore more , view the other features like ULTRA ZOOM LENS , brail display , text significance ,  and so on .
+            </li>
           </li>
         </ul>
         <div class="chat-input">
@@ -162,6 +192,9 @@
     </div>
     <div class="chat-content">
       <h1>highlight the text</h1>
+      <p class="textinnfo" style="width: 300px;" >
+        we help you to get the quick summery on basis of AI , highlighting important text , so you can get the idea of the website quickly .
+      </p>
       <button id="highlight-chat-button" class="highlight-chat-button">
         highlight
       </button>
@@ -178,7 +211,8 @@
     <div class="chat-content">
       <div class="mainbrailcolordiv">
         <div id="braildiv" class="braildiv">
-          <div class="mainbrailstrip" id="mainbrailstrip">
+          <div class="brailmaininstandplate" style="display: flex;" >
+                      <div class="mainbrailstrip" id="mainbrailstrip">
             <div class="brailarrow" id="brailleft">
               <button>&lt;</button>
             </div>
@@ -195,6 +229,11 @@
             <div class="brailarrow" id="brailright">
               <button>&gt;</button>
             </div>
+          </div>
+          <div class="brailinstruction" style="width: 300px; display: flex;align-items: center;text-align: center;justify-content: center; " >
+            If you are a deaf , but your eyes are still sensitive to light , we can help you with screen based brail . <br>
+  try to increase your monitor brightness , turn room light off , and get close to your monitor screen . <br> Now try to guess the letter on basis of light difference .Yes , it is a "t" letter . now , press left arrow key on your keyboard , and go to past letter , and right arrow key to next letter .
+          </div>
           </div>
           <div class="textstrip">
             <button class="brail-english-letter" id="brail-english-letter-0">
@@ -244,6 +283,9 @@
           <button id="turn-on-camera">Start Camera</button>
           <video id="sign-video" autoplay></video>
           <canvas id="sign-canvas" style="display: none"></canvas>
+          <div class="signinstruction" style="width: 400px;" >
+            This feature is under development . If we get in selected , we will work on this project . already we have done a lot of work .
+          </div>
         </div>
       </div>
     </div>
