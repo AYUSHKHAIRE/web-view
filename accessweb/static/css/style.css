@@ -372,7 +372,7 @@ button:hover {
   appearance: none;
   width: 25px; /* Set a specific slider handle width */
   height: 25px; /* Slider handle height */
-  background: #04aa6d; /* Green background */
+  background: #3498db; /* Green background */
   cursor: pointer; /* Cursor on hover */
   border-radius: 50%;
 }
@@ -380,7 +380,7 @@ button:hover {
 .slider::-moz-range-thumb {
   width: 25px; /* Set a specific slider handle width */
   height: 25px; /* Slider handle height */
-  background: #04aa6d; /* Green background */
+  background: #0073b1; /* Green background */
   cursor: pointer; /* Cursor on hover */
 }
 
@@ -415,6 +415,7 @@ input[type="checkbox"] {
   border: 0.25rem solid #3498db;
   border-radius: 0.5rem;
   background-color: rgb(34, 34, 34);
+  margin: 10px;
 }
 
 input[type="checkbox"]::before {
@@ -512,7 +513,6 @@ input[type="checkbox"]:checked::before {
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -538,7 +538,6 @@ input[type="checkbox"]:checked::before {
 }
 
 .chat-incoming p {
-  background: rgba(173, 216, 230, 0.2);
   color: white;
 }
 
@@ -558,7 +557,6 @@ input[type="checkbox"]:checked::before {
 .chat-input {
   display: flex;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
   gap: 8px;
   align-items: center;
 }
