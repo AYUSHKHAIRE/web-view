@@ -1039,16 +1039,27 @@ Your task is to analyze the provided prompt and determine whether it is:
    - **fill_search_enter**: The user wants to enter text into an input field.  
    - **Hover**: The user wants to hover over an element for additional information.  
 
+If it is not indicating an action and you think you have a normal query , you just answer it normally. 
+send it as a json , only containing like "response" : "your answer" .
+for example ,  if the user asks "what is the capital of france" , you would send back "response" : "the capital of france is paris" .
+also use markdown in detailed responses .
+
 If the prompt indicates an action, you will receive an **information section** containing elements.
-  
 Your response must extract the relevant element and return it in the following format:  
 whatever the action you perform or whatever the user ask about an element .
 you need to detect the action about , look for the text , in the provided list , 
 and return it as in format .
-for example , if on a website there is a buttonn sign up .
+for example , if on a website there is a button sign up .
 and the user ask you to click on the sign up button .
 you will return the text sign up button , with the format below in a JSON .
-action element_text coordinates remark new_generated_text
+action element_text remark response 
+for example 
+{
+    "action": "click",
+    "element_text": "Code",
+    "remark": "The user wants to click on the Code button.",
+    "response": "The Code button has been clicked . please check the website for any changes."
+}
 do not use "\n" anyway .
 for click action , new_generated_text will none .
 for fill_search_enter action , new_generated_text will be the text user asked to fill or search . element_text also be there .
@@ -1087,54 +1098,55 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 new_answer = self.generate(new_question)
                 logger.warning(new_answer)
                 new_answer_dict = json.loads(new_answer)
-                action_required = new_answer_dict["action"].lower().replace('\n','')
-                element_text = new_answer_dict["element_text"].replace('\n','')
-                new_cordinates = None
-                new_generated_text = None
-                if new_answer_dict["new_generated_text"]:
-                    new_generated_text = new_answer_dict["new_generated_text"].replace('\n','')
-                cord_group = []
-                for key in text_resp.keys():
-                    if key in  element_text:
-                        cord_group.append(text_resp[key])
-                logger.warning(f'{cord_group} | {action_required} | {element_text}')
-                if action_required == "click":
-                    logger.warning(f"click triggered by ai")
-                    new_list = []
-                    for a_list in cord_group:
-                        new_list = new_list + a_list
-                    center_x = sum(point['x'] for point in new_list) / len(new_list)
-                    center_y = sum(point['y'] for point in new_list) / len(new_list)
-                    center = (center_x, center_y)
-                    infodict = {
-                        'x':int(center_x),
-                        'y':int(center_y),
-                    }
-                    SM.driver_message = "click_on_driver"
-                    SM.driver_instruction =  infodict
-                    logger.warning(f"Center coordinates click : {center}")
-                if action_required == "fill_search_enter":
-                    logger.warning(f"input triggered by ai")
-                    new_list = []
-                    for a_list in cord_group:
-                        new_list = new_list + a_list
-                    center_x = sum(point['x'] for point in new_list) / len(new_list)
-                    center_y = sum(point['y'] for point in new_list) / len(new_list)
-                    center = (center_x, center_y)
-                    infodict = {
-                        'x':int(center_x),
-                        'y':int(center_y),
-                    }
-                    new_keypress_dict = {
-                        'key':new_generated_text
-                    }
-                    SM.driver_message = "click_on_driver"
-                    SM.driver_instruction =  infodict
-                    time.sleep(2)
-                    SM.driver_message = "keypress"
-                    SM.driver_instruction = new_keypress_dict
-                    
-                await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                if "action" and "element_text" in new_answer_dict.keys():
+                    action_required = new_answer_dict["action"].lower().replace('\n','')
+                    element_text = new_answer_dict["element_text"].replace('\n','')
+                    cord_group = []
+                    for key in text_resp.keys():
+                        if key in  element_text:
+                            cord_group.append(text_resp[key])
+                    cord_group = cord_group[:1]
+                    logger.warning(f'{cord_group} | {action_required} | {element_text}')
+                    if action_required == "click":
+                        logger.warning(f"click triggered by ai")
+                        new_list = []
+                        for a_list in cord_group:
+                            new_list = new_list + a_list
+                        center_x = sum(point['x'] for point in new_list) / len(new_list)
+                        center_y = sum(point['y'] for point in new_list) / len(new_list)
+                        center = (center_x, center_y)
+                        infodict = {
+                            'x':int(center_x),
+                            'y':int(center_y),
+                        }
+                        SM.driver_message = "click_on_driver"
+                        SM.driver_instruction =  infodict
+                        logger.warning(f"Center coordinates click : {center}")
+                    if action_required == "fill_search_enter":
+                        logger.warning(f"input triggered by ai")
+                        new_list = []
+                        for a_list in cord_group:
+                            new_list = new_list + a_list
+                        center_x = sum(point['x'] for point in new_list) / len(new_list)
+                        center_y = sum(point['y'] for point in new_list) / len(new_list)
+                        center = (center_x, center_y)
+                        infodict = {
+                            'x':int(center_x),
+                            'y':int(center_y),
+                        }
+                        new_generated_text = new_answer_dict["new_generated_text"].replace('\n','')
+                        new_keypress_dict = {
+                            'key':new_generated_text
+                        }
+                        SM.driver_message = "click_on_driver"
+                        SM.driver_instruction =  infodict
+                        time.sleep(2)
+                        SM.driver_message = "keypress"
+                        SM.driver_instruction = new_keypress_dict
+                        await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                else:
+                    logger.warning("no action required")
+                    await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                 logger.debug("Set up vision response, handing over to thread")
             except Exception as e:
                 logger.error(f"Error in setting up LLM response: {e}")
