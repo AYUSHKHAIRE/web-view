@@ -141,6 +141,40 @@ body {
   width: 100%;
 }
 
+/* forms */
+.container input{
+  min-width: 30%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #000000;
+  margin-bottom: 10px;
+  color: #dde4fb;
+  border-bottom: #0073b1 0.5px solid;
+}
+
+.container input:focus{
+  outline: none;
+  border-bottom: #0073b1 3.5px solid;
+}
+
+.container input:hover{
+  background-color: #151a2d;
+}
+
+.container input::placeholder{
+  color: #d3d3d3;
+}
+
+.prompt-for-ai{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  width: 100%;
+  border: #0073b1 0.5px solid;
+}
 /* search  */
 
 .search {
