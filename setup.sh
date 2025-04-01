@@ -25,11 +25,13 @@ sudo apt install -y nginx
 # install git 
 sudo apt install -y git
 
+# install python3
+sudo apt install -y python3 python3-pip python3-venv
+
 # Start and enable Docker service
 sudo systemctl start docker
 sudo systemctl enable docker
 sudo systemctl status docker
-
 
 # Start and enable Redis service
 sudo systemctl start redis-server
@@ -39,6 +41,6 @@ sudo systemctl status redis-server
 # Print versions to verify installation
 docker --version
 redis-server --version
-
-# install python3
-sudo apt install -y python3 python3-pip python3-venv
+python3 --version
+nginx -v
+git --version
