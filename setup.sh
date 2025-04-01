@@ -16,13 +16,20 @@ sudo echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/do
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io
 
+# Install Redis
+sudo apt install -y redis-server
+
+# install nginx
+sudo apt install -y nginx 
+
+# install git 
+sudo apt install -y git
+
 # Start and enable Docker service
 sudo systemctl start docker
 sudo systemctl enable docker
 sudo systemctl status docker
 
-# Install Redis
-sudo apt install -y redis-server
 
 # Start and enable Redis service
 sudo systemctl start redis-server
