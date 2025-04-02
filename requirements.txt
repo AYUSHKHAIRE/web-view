@@ -16,8 +16,10 @@ cryptography==44.0.0
 daphne==4.1.2
 Django==5.1.5
 dotenv==0.9.9
+filelock==3.18.0
 flatbuffers==25.2.10
 gast==0.6.0
+gdown==5.2.0
 google-pasta==0.2.0
 grpcio==1.70.0
 gunicorn==23.0.0
@@ -47,6 +49,7 @@ pycparser==2.22
 PyExecJS==1.5.1
 Pygments==2.19.1
 pyOpenSSL==25.0.0
+PySocks==1.7.1
 python-dotenv==1.1.0
 redis==5.2.1
 requests==2.32.3
@@ -60,6 +63,7 @@ tensorboard==2.18.0
 tensorboard-data-server==0.7.2
 tensorflow==2.18.0
 termcolor==2.5.0
+tqdm==4.67.1
 Twisted==24.11.0
 txaio==23.1.1
 typing_extensions==4.12.2
