@@ -1,9 +1,9 @@
-/djenv
+djenv
 
-/accessweb/db.sqlite3
+accessweb/db.sqlite3
 
-/accessweb/browse/docker_containers
-/accessweb/browse/chrome/credscloud.json
+accessweb/browse/docker_containers
+accessweb/browse/chrome/credscloud.json
 accessweb/browse/chrome/.env
 accessweb/browse/__pycache__
-/accessweb/browse/assets/
+accessweb/browse/assets/asl_cnn_model.h5
