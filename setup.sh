@@ -72,6 +72,9 @@ mkdir assets
 cd assets
 gdown "https://drive.google.com/uc?id=13rZDduDh1LHnO7VC4_3qTnc183vlm0ow" -O asl_cnn_model.h5
 
+
+# =======================================================================
+
 # firewall 
 
 gcloud compute firewall-rules list --filter="name~'http'"
@@ -81,6 +84,8 @@ gcloud compute firewall-rules create allow-django-8000 \
     --source-ranges 0.0.0.0/0 \
     --target-tags http-server \
     --description "Allow Django on port 8000"
+
+# =======================================================================
 
 # build database and superuser 
 cd ~/accessweb/web-view/accessweb/
@@ -110,9 +115,17 @@ sudo reboot
 cd accessweb/web-view/accessweb/browse/chrome/
 docker build -t selenium_capture .
 
+# ==========================================================
+
 # if disk gets full
 docker system prune -a -f
 docker volume prune -f
 sudo apt-get autoremove -y
 sudo apt-get clean
 sudo journalctl --vacuum-time=1d
+
+# ==========================================================
+
+source ~/accessweb/env/bin/activate
+cd ~/accessweb/web-view/accessweb/
+python manage.py runserver 0.0.0.0:8000
