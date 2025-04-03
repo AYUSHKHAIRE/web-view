@@ -142,6 +142,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# for cors and csrf for docker
+
 from browse.sessionmanager import get_local_ip
 LOCAL_IP_ADDRESS = get_local_ip()
 
