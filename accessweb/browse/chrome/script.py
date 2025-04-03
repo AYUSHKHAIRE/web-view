@@ -25,6 +25,7 @@ from multiprocessing.shared_memory import SharedMemory
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
+# scripts
 
 """
 This file have 3 parts .
