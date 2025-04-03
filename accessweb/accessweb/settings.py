@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z+lt)h^1@@z3-b%-kvkyd_25ey-a&m_g6ygv(u*f3(cbi3)pbn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 # Application definition
 
@@ -39,10 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'browse',
-    'core'
+    'core',
+    'corsheaders' ,
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -139,3 +141,23 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+from browse.sessionmanager import get_local_ip
+LOCAL_IP_ADDRESS = get_local_ip()
+
+# add to allowed hosts
+ALLOWED_HOSTS.append(LOCAL_IP_ADDRESS) 
+
+# allow some origins 
+CORS_ALLOWED_ORIGINS = [
+    f"http://{LOCAL_IP_ADDRESS}:8000",
+]
+
+# csrf origins 
+CSRF_TRUSTED_ORIGINS = [
+    f"http://{LOCAL_IP_ADDRESS}:8000",
+]
+
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies & authentication
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["*"]

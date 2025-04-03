@@ -25,6 +25,7 @@ from multiprocessing.shared_memory import SharedMemory
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
+
 """
 This file have 3 parts .
 1. WebSocketClient : A class to handle the websocket client
@@ -100,12 +101,14 @@ class WebSocketClient:
         self, 
         uri, 
         user_id, 
-        auth_token
+        auth_token,
+        ip
     ):
         self.uri = uri
         self.user_id = user_id
         self.auth_token = auth_token  
         self.websocket = None
+        self.ip = ip
         self.loop = asyncio.new_event_loop()
     
     """
@@ -163,9 +166,11 @@ class WebSocketClient:
     async def connect(
         self
     ):
+        # Gets the primary network interface's IP address
+        logger.warning(f"Local IP Address:{self.ip}")
         try:
             headers = {
-                'Origin':"http://127.0.0.1:8000",
+                'Origin':f"http://{self.ip}:8000",
                 "Authorization": f"Bearer {self.auth_token}"
             }
             logger.debug(f"trying to connect to {self.uri}")
@@ -1218,8 +1223,9 @@ user_id = os.environ.get('CONTAINER_USER_ID')
 auth_token = os.environ.get('CONTAINER_USER_AUTH_TOKEN')
 screendex = os.environ.get('SCREENDEX')
 gemini_api_key = os.environ.get('GEMINI_API_KEY')
+local_IP = os.environ.get('LOCAL_IP_ADDRESS')
 
-logger.warning(gemini_api_key)
+logger.warning(f"{gemini_api_key}")
 
 screendex = screendex.replace('px', '')
 screen_width = int(float(
@@ -1231,7 +1237,7 @@ screen_height = int(float(
 logger.warning(f"got screen {screen_width} {screen_height}")
 
 logger.debug(f"Starting Docker for user: {user_id}")
-websocket_uri = f"ws://127.0.0.1:8000/ws/browse/{user_id}/"
+websocket_uri = f"ws://{local_IP}:8000/ws/browse/{user_id}/"
 SM = selenium_manager()
 
 GAC = GeminiAPIClient(api_key=gemini_api_key)
@@ -1241,7 +1247,8 @@ VA = visionApi(file_path="credscloud.json")
 WS_CLIENT = WebSocketClient(
         uri=websocket_uri, 
         user_id=user_id, 
-        auth_token=auth_token
+        auth_token=auth_token,
+        ip=local_IP,
 )
     
 

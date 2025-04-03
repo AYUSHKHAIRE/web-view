@@ -5,6 +5,17 @@ import json
 from browse.logger_config import logger
 from accessweb.settings import BASE_DIR
 from dotenv import load_dotenv
+import socket
+
+def get_local_ip():
+# Gets the primary network interface's IP address
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect(("8.8.8.8", 80))  # Google's public DNS
+        local_ip = s.getsockname()[0]
+    return local_ip
+
+LOCAL_IP_ADDRESS = get_local_ip()
+
 DOCKER_IMAGE = "selenium_capture"
 
 # control all sessions
@@ -100,6 +111,7 @@ class sessionManager():
                             "-e", f"CONTAINER_USER_AUTH_TOKEN={auth_token}" ,
                             "-e", f"SCREENDEX={screendex}" ,
                             "-e", f"GEMINI_API_KEY={gemini_api_key}" ,
+                            "-e", f"LOCAL_IP_ADDRESS={LOCAL_IP_ADDRESS}" ,
                             DOCKER_IMAGE
                     ], 
                         stdout=subprocess.PIPE, 
