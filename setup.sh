@@ -52,10 +52,9 @@ nginx -v
 git --version
 
 # make a virtual environment
-sudo pip3 install virtualenv
 mkdir ~/accessweb 
 cd ~/accessweb
-virtualenv env
+python3  -m venv env
 source env/bin/activate
 
 # clone the repository 
@@ -68,4 +67,52 @@ pip install -r requirements.txt
 sudo ufw allow 8000
 
 # download model 
-gdown "https://drive.google.com/uc?id=13rZDduDh1LHnO7VC4_3qTnc183vlm0ow" -O /home/codeeayush/accessweb/web-view/accessweb/browse/assets/asl_cnn_model.h5
+cd accessweb/browse/
+mkdir assets
+cd assets
+gdown "https://drive.google.com/uc?id=13rZDduDh1LHnO7VC4_3qTnc183vlm0ow" -O asl_cnn_model.h5
+
+# firewall 
+
+gcloud compute firewall-rules list --filter="name~'http'"
+
+gcloud compute firewall-rules create allow-django-8000 \
+    --allow tcp:8000 \
+    --source-ranges 0.0.0.0/0 \
+    --target-tags http-server \
+    --description "Allow Django on port 8000"
+
+# build database and superuser 
+cd ~/accessweb/web-view/accessweb/
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+
+# add ip to ALLOWED_HOSTS in settings.py
+sudo nano accessweb/settings.py
+# make the admin , profile and test 
+
+# run the server
+python manage.py runserver 0.0.0.0:8000
+
+# build the docker container
+# after reboot , come back , do SSH again .
+cd browse/chrome/
+sudo touch credscloud.json
+sudo nano credscloud.json
+# paste the content of the credscloud.json file here
+sudo touch .env 
+sudo nano .env
+# paste the content of the .env file here
+# give docker permission wirthout sudo
+sudo usermod -aG docker $USER 
+sudo reboot 
+cd accessweb/web-view/accessweb/browse/chrome/
+docker build -t selenium_capture .
+
+# if disk gets full
+docker system prune -a -f
+docker volume prune -f
+sudo apt-get autoremove -y
+sudo apt-get clean
+sudo journalctl --vacuum-time=1d
