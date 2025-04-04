@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon for accessweb project
+After=network.target
+
+[Service]
+User=REPLACE_WITH_USERNAME
+Group=www-data
+WorkingDirectory=/path/to/your/project/root/
+ExecStart=/path/to/your/venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn.sock accessweb.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
