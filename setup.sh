@@ -129,3 +129,42 @@ sudo journalctl --vacuum-time=1d
 source ~/accessweb/env/bin/activate
 cd ~/accessweb/web-view/accessweb/
 python manage.py runserver 0.0.0.0:8000
+
+# ==========================================================
+
+# dry gunicorn run 
+gunicorn --bind 0.0.0.0:8000 accessweb.wsgi 
+# will not render static files 
+
+# ===========================================================
+python manage.py collectstatic
+pwd 
+# /home/codeeayush/accessweb/web-view/accessweb
+
+sudo nano /etc/systemd/system/gunicorn.socket
+# paste the content of the gunicorn.socket file here
+sudo nano /etc/systemd/system/gunicorn.service
+# paste the content of the gunicorn.service file here
+sudo systemctl start gunicorn.socket
+sudo systemctl enable gunicorn.socket
+file /run/gunicorn.sock
+sudo systemctl status gunicorn.socket 
+sudo journalctl -u gunicorn.socket
+sudo systemctl start gunicorn.service
+sudo systemctl enable gunicorn.service
+sudo systemctl status gunicorn.service
+curl --unix-socket /run/gunicorn.sock
+sudo systemctl status gunicorn.service
+sudo nano /etc/nginx/sites-available/accessweb
+sudo rm /etc/nginx/sites-enabled/accessweb
+sudo ln -s /etc/nginx/sites-available/accessweb /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl restart nginx
+sudo ufw delete allow 8000
+sudo ufw allow 'Nginx Full'
+# Give 'others' read on files and execute (cd) on folders
+sudo chmod -R o+r /home/ayushkhaire/code/accessweb/accessweb/staticfiles/
+sudo find /home/ayushkhaire/code/accessweb/accessweb/staticfiles/ -type d -exec chmod o+x {} \;
+sudo nginx -t       # Check config
+sudo systemctl reload nginx
+sudo tail -n 30 /var/log/nginx/error.log    
