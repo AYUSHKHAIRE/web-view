@@ -147,9 +147,10 @@ function getScreen() {
 
 function estabilish_socket(user_id) {
   button.textContent = "connecting socket .";
-  sessionSocket = new WebSocket(
-    "ws://" + window.location.host + "/ws/" + "browse/" + user_id + "/"
-  );
+  const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+  const wsUrl = protocol + window.location.host + "/ws/browse/" + user_id + "/";
+  console.log("new WebSocket URL:", wsUrl);
+  const sessionSocket = new WebSocket(wsUrl);
   sessionSocket.binaryType = "blob";
   sessionSocket.onopen = () => {
     console.log("WebSocket connection successfully established!");
