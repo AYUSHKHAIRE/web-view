@@ -1,0 +1,14 @@
+/etc/systemd/system/uvicorn.service
+
+[Unit]
+Description=Uvicorn ASGI server for Django WebSockets
+After=network.target
+
+[Service]
+User=your_username
+Group=your_username
+WorkingDirectory=/path/to/your/project/root/
+ExecStart=/path/to/your/venv/bin/uvicorn your_project.asgi:application --host 127.0.0.1 --port 8001
+
+[Install]
+WantedBy=multi-user.target
