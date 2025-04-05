@@ -9,6 +9,13 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
+    location /ws/ {
+        proxy_pass http://unix:/run/gunicorn.sock:;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+    }
     location /static/ {
         alias /path/to/your/project/staticfiles/;  # Update this path
         autoindex on;  # Optional: shows directory listing
