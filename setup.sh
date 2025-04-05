@@ -167,4 +167,7 @@ sudo chmod -R o+r /home/ayushkhaire/code/accessweb/accessweb/staticfiles/
 sudo find /home/ayushkhaire/code/accessweb/accessweb/staticfiles/ -type d -exec chmod o+x {} \;
 sudo nginx -t       # Check config
 sudo systemctl reload nginx
-sudo tail -n 30 /var/log/nginx/error.log    
+sudo tail -n 30 /var/log/nginx/error.log 
+sudo tail -n 30 /var/log/nginx/access.log 
+sudo systemctl daemon-reexec
+sudo systemctl restart gunicorn
