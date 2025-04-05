@@ -139,6 +139,7 @@ gunicorn --bind 0.0.0.0:8000 accessweb.wsgi
 # ===========================================================
 python manage.py collectstatic
 pwd 
+whoami
 # /home/codeeayush/accessweb/web-view/accessweb
 
 sudo nano /etc/systemd/system/gunicorn.socket
@@ -153,6 +154,10 @@ sudo journalctl -u gunicorn.socket
 sudo systemctl start gunicorn.service
 sudo systemctl enable gunicorn.service
 sudo systemctl status gunicorn.service
+sudo nano /etc/systemd/system/uvicorn.service
+sudo systemctl start uvicorn.service
+sudo systemctl enable uvicorn.service
+sudo systemctl status uvicorn.service
 curl --unix-socket /run/gunicorn.sock
 sudo systemctl status gunicorn.service
 sudo nano /etc/nginx/sites-available/accessweb
@@ -162,12 +167,28 @@ sudo nginx -t
 sudo systemctl restart nginx
 sudo ufw delete allow 8000
 sudo ufw allow 'Nginx Full'
-# Give 'others' read on files and execute (cd) on folders
-sudo chmod -R o+r /home/ayushkhaire/code/accessweb/accessweb/staticfiles/
+# Make sure all directories are accessible
+sudo chmod o+x /home
+sudo chmod o+x /home/codeeayush
+sudo chmod o+x /home/codeeayush/accessweb
+sudo chmod o+x /home/codeeayush/accessweb/web-view
+sudo chmod o+x /home/codeeayush/accessweb/web-view/accessweb
+# Set correct ownership and readable permissions on static files
+sudo chown -R codeeayush:www-data /home/codeeayush/accessweb/web-view/accessweb/staticfiles
+sudo chmod -R 755 /home/codeeayush/accessweb/web-view/accessweb/staticfiles
 sudo find /home/ayushkhaire/code/accessweb/accessweb/staticfiles/ -type d -exec chmod o+x {} \;
 sudo nginx -t       # Check config
 sudo systemctl reload nginx
 sudo tail -n 30 /var/log/nginx/error.log 
 sudo tail -n 30 /var/log/nginx/access.log 
 sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
 sudo systemctl restart gunicorn
+sudo systemctl restart nginx
+
+# set ssl 
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+
+# in accessweb/browse/chrome/script.py 
+# change to wss , and add domain instad of ip .
