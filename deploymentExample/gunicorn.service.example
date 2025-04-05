@@ -1,12 +1,21 @@
+/etc/systemd/system/gunicorn.service
+
 [Unit]
-Description=gunicorn daemon for accessweb project
+Description=gunicorn daemon for Django project
 After=network.target
 
 [Service]
 User=REPLACE_WITH_USERNAME
 Group=www-data
+
+# Set this to the Django project root (where manage.py lives)
 WorkingDirectory=/path/to/your/project/root/
-ExecStart=/path/to/your/venv/bin/gunicorn --workers 3 --bind unix:/run/gunicorn.sock accessweb.wsgi:application
+
+# Gunicorn startup command using virtual environment
+ExecStart=/path/to/your/venv/bin/gunicorn \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          project_name.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
