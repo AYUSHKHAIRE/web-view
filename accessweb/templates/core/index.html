@@ -1,8 +1,123 @@
-{% extends "base.html" %} {% block content %}
-<div class="maincontainer">
-  Good day,
-  <div id="cliusername">
-    {% if user.is_authenticated %} {{request.user.username}} {% endif %}
-  </div>
+{% extends '../base.html' %} {% load static %} {% block content %}
+<link rel="stylesheet" href="{% static '/css/home.css' %}" />
+<!-- HERO SECTION -->
+<div class="hero">
+  <h1>Welcome to the site</h1>
+  <p>The smartest web accessibility tool for everyone.</p>
+  <button
+    class="hero-button"
+    onclick="document.querySelector('.features').scrollIntoView({ behavior: 'smooth' })"
+  >
+    View Features
+  </button>
+  <button class="hero-button" onclick="window.location.href='/browse'">
+    Start Browsing !
+  </button>
 </div>
+
+<!-- FEATURES SECTION -->
+<section class="features">
+  <div class="feature">
+    <div class="feature-text">
+      <h2>Do not disturb the webpage</h2>
+      <p>Browse website normally - No more extensions or Ctrl++/--!</p>
+    </div>
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/6_general_look_screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif?raw=true"
+        alt="Smart Navigation Screenshot"
+      />
+    </div>
+  </div>
+
+  <div class="feature reverse">
+    <div class="feature-text">
+      <h2>Smart Navigation</h2>
+      <p>Browse the web like a suitable browser - for you !</p>
+    </div>
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/1_session_screen-captureonline-video-cutter.com-ezgif.com-effects.gif?raw=true"
+        alt="Smart Navigation Screenshot"
+      />
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-text">
+      <h2>AI assistance</h2>
+      <p>Use AI to assist you in navigating the web !</p>
+    </div>
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/3_ai_intigration_screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif?raw=true"
+        alt="Smart Navigation Screenshot"
+      />
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/2_view_lens_screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif?raw=true"
+        alt="Zoom Feature Screenshot"
+      />
+    </div>
+    <div class="feature-text">
+      <h2>Custom Zooming</h2>
+      <p>
+        Adjust the zoom levels of any website in real-time to match your vision
+        needs.
+      </p>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-text">
+      <h2>Focus on what is important</h2>
+      <p>
+        Focus on the only important elements , saving your time with efficiency
+        !
+      </p>
+    </div>
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/4_identify_text_screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif?raw=true"
+        alt="Click Assist Screenshot"
+      />
+    </div>
+  </div>
+  <div class="feature reverse">
+    <div class="feature-text">
+      <h2>Digital brail board</h2>
+      <p>Use light difference to read with brail !</p>
+    </div>
+    <div class="feature-img">
+      <img
+        src="https://github.com/AYUSHKHAIRE/web-view/blob/main/assets/general/5_brail_supporter_screen-captureonline-video-cutter.com.mp4screen-captureonline-video-cutter.com-ezgif.com-video-to-gif-converter.gif?raw=true"
+        alt="Click Assist Screenshot"
+      />
+    </div>
+  </div>
+</section>
+
+<!-- SCROLL TRIGGER SCRIPT -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const featureSection = document.querySelector(".features");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            featureSection.classList.add("show");
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(featureSection);
+  });
+</script>
 {% endblock content %}
