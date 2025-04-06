@@ -174,3 +174,50 @@ p {
     padding: 10px;
   }
 }
+
+.developer-section {
+  background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+  color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.developer-note {
+  max-width: 800px;
+  margin: 0 auto 40px;
+}
+
+.developer-note h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.developer-note p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+.contact-section {
+  background: #111;
+  color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.2rem;
+  background: #1e1e1e;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
