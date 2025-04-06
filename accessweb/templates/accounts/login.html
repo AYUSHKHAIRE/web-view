@@ -2,6 +2,7 @@
 <div class="maincontainer"  style="height: 100vh; display: flex; justify-content: center; align-items: center;">
   <form class="container" method="post" action="{% url 'login' %}">
     <h1>Login</h1>
+    <h3>We are not accepting new users . Please log in by "new_user" as username and "new_user" as password .</h3>
     {% csrf_token %}
     <input
       class="form-input"
@@ -9,14 +10,17 @@
       name="username"
       id="username"
       placeholder="Username"
+      value="new_user"
     />
     <input
       class="form-input"
       type="password"
       name="password"
       id="password"
+      value="new_user"
       placeholder="Password"
     />
+    <h3>It should be auto-entered - Please ssubmit !</h3>
     <button class="form-button" type="submit">Submit</button>
   </form>
 </div>
