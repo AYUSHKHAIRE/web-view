@@ -20,11 +20,6 @@ refer this article : https://www.pharmabraille.com/pharmaceutical-braille/the-br
 
 BB = BrailBelt()
 
-logger.warning("starting sign language model loading")
-sign_model_path = os.path.join(BASE_DIR ,"browse/assets/asl_cnn_model.h5")
-A_CNN = ASL_CNN(model_path=sign_model_path)
-logger.warning("sign language model load complete")
-
 TASK_POOL = {}
 
 class WebSocketConsumer(
