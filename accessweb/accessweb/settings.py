@@ -152,6 +152,8 @@ LOCAL_IP_ADDRESS = get_local_ip()
 # add to allowed hosts
 ALLOWED_HOSTS.append(LOCAL_IP_ADDRESS) 
 
+print(f"Local IP Address: {LOCAL_IP_ADDRESS} added to allowed hosts")
+
 # allow some origins 
 CORS_ALLOWED_ORIGINS = [
     f"http://{LOCAL_IP_ADDRESS}:8000",

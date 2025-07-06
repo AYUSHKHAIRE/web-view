@@ -3,10 +3,5 @@ djenv
 accessweb/db.sqlite3
 
 accessweb/browse/docker_containers
-accessweb/browse/chrome/credscloud.json
 accessweb/browse/chrome/.env
-accessweb/browse/__pycache__
-accessweb/browse/assets/asl_cnn_model.h5
 
-accessweb/staticfiles
-deployment
