@@ -5,3 +5,4 @@ accessweb/db.sqlite3
 accessweb/browse/docker_containers
 accessweb/browse/chrome/.env
 
+*.pyc
