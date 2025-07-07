@@ -1,29 +1,34 @@
+# Standard Library
+import os
 import time
+import json
+import base64
 import asyncio
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from threading import Thread, RLock
+from multiprocessing import shared_memory
+from multiprocessing.shared_memory import SharedMemory
+
+# Selenium & Undetected ChromeDriver
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
-from multiprocessing import shared_memory
-import os
-from threading import Thread
-import json
+
+# Websocket
 import websockets
-import asyncio
-import time
-from logger_config import logger
-from threading import RLock
+
+# Google APIs
 from google import genai
-from google.genai import types 
+from google.genai import types
 from google.genai.types import HttpOptions
 from google.cloud import vision
-import base64
-from multiprocessing.shared_memory import SharedMemory
+
+# HTML Parsing
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
+
+# Logger
+from logger_config import logger
+
 
 # scripts
 
@@ -425,32 +430,32 @@ class selenium_manager:
     output:
         None
     """
-    def setup_selenium_driver(
-        self
-    ):
-        """Setup and return a Selenium WebDriver instance."""
+    
+    def setup_selenium_driver(self):
         start_time = time.time()
-        chrome_options = Options()
+
+        chrome_options = uc.ChromeOptions()
         chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")  # Optional: remove if visual testing
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
-        main_driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=chrome_options
-        )
+        main_driver = uc.Chrome(options=chrome_options)
         outer_width = main_driver.execute_script("return window.outerWidth;")
         inner_width = main_driver.execute_script("return window.innerWidth;")
         outer_height = main_driver.execute_script("return window.outerHeight;")
         inner_height = main_driver.execute_script("return window.innerHeight;")
+
         width_diff = outer_width - inner_width
-        height_diff = outer_height-inner_height
+        height_diff = outer_height - inner_height
+
         n_screen_width = screen_width + width_diff
         n_screen_height = screen_height + height_diff
         main_driver.set_window_size(n_screen_width, n_screen_height)
+
         end_time = time.time()
-        logger.info(f"[ SETUP ] Selenium WebDriver setup took {end_time - start_time:.4f} seconds")
-        self.driver =  main_driver
-    
+        logger.info(f"[ SETUP ] Undetected WebDriver setup took {end_time - start_time:.4f} seconds")
+        self.driver = main_driver
+
     """
     A function handling all the triggers from the websocket
     input:
@@ -1243,7 +1248,11 @@ SM = selenium_manager()
 
 GAC = GeminiAPIClient(api_key=gemini_api_key)
 
-VA = visionApi(file_path="credscloud.json")
+try:
+    VA = visionApi(file_path="credscloud.json")
+except Exception as e:
+    logger.error(f"Error initializing vision API: {e}")
+    VA = None
 
 WS_CLIENT = WebSocketClient(
         uri=websocket_uri, 
