@@ -63,7 +63,6 @@ class sessionManager():
             )
         )
         gemini_api_key = os.getenv("GEMINI_API_KEY")
-        gemini_api_key = "some_key"
         if not gemini_api_key:
             logger.error("[ SESSION ] Gemini API key not found in environment variables.")
             return
