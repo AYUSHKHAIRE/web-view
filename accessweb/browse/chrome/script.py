@@ -29,6 +29,10 @@ from bs4 import BeautifulSoup
 # Logger
 from logger_config import logger
 
+# image processing
+import cv2
+import pytesseract
+import numpy as np
 
 # scripts
 
@@ -1163,9 +1167,9 @@ Ensure your output is structured, concise, and relevant to the given prompt.
                 logger.error(f"Error in setting up LLM response: {e}")
     
 
-class visionApi:
-    def __init__(self,file_path):
-        self.client = vision.ImageAnnotatorClient.from_service_account_file(file_path)
+class visionApiLocal:
+    def __init__(self):
+        self.extract_engine = pytesseract
         self.label_resp = None
         self.text_resp = None
         
@@ -1177,33 +1181,33 @@ class visionApi:
             buffers = buffers[:null_index] if null_index != -1 else buffers  
             base64_string = buffers.decode("utf-8")  # Convert bytes to string
             image_bytes = base64.b64decode(base64_string)  # Convert base64 string to bytes
-            return image_bytes  # Return raw image bytes
+            image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+            image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            return image_rgb  # Return raw image bytes
         except Exception as e:
             print(f"Error in get_screenshot_content: {e}")
             return None
-        
+
     def get_info_for_img(self):
         content = self.get_screenshot_content()
-        image = vision.Image(content = content)
-        lb_response = self.client.label_detection(image = image)
-        tx_response  = self.client.text_detection(image = image)
-        # logger.warning(lb_response)
-        # logger.warning(tx_response)
-        labels = [
-            {
-                "description": label.description,
-            }
-            for label in lb_response.label_annotations
-        ]
+        data = self.extract_engine.image_to_data(content, output_type=self.extract_engine.pytesseract.Output.DICT)
         texts = {}
-        for text in tx_response.text_annotations:
-            texts[text.description] = [
-                    {"x": vertex.x, "y": vertex.y} for vertex in text.bounding_poly.vertices
-                ]
         vision_summery = []
-        for textele in texts.keys():
-            vision_summery.append(textele)
-        return  labels, texts , vision_summery
+        n_boxes = len(data['text'])
+        for i in range(n_boxes):
+            text = data['text'][i].strip()
+            if text:
+                x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
+                texts[text] = [
+                    {"x": x, "y": y},
+                    {"x": x + w, "y": y},
+                    {"x": x + w, "y": y + h},
+                    {"x": x, "y": y + h}
+                ]
+                vision_summery.append(text)
+        labels = []  # You can later populate this with your own image classification model if needed
+        return labels, texts, vision_summery
 
     async def trigger_bridge(self, type, message):
         """Handles different vision requests and sends responses via WebSocket."""
@@ -1249,7 +1253,7 @@ SM = selenium_manager()
 GAC = GeminiAPIClient(api_key=gemini_api_key)
 
 try:
-    VA = visionApi(file_path="credscloud.json")
+    VA = visionApiLocal()
 except Exception as e:
     logger.error(f"Error initializing vision API: {e}")
     VA = None
