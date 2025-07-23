@@ -823,7 +823,6 @@ class selenium_manager:
         driver,
         url = None
         ):
-        url = None
         if url == None:
             url = self.default_url
         """Navigate WebDriver to a URL."""
@@ -1012,6 +1011,15 @@ class selenium_manager:
                             self.driver_instruction = None
                             self.driver_message = None
                             logger.debug("wrapping up page source")
+                        elif self.driver_message == "navigate":
+                            self.driver = self.hit_url_on_browser(
+                                driver=self.driver,
+                                url=self.driver_instruction['go_to']
+                            )
+                            logger.debug("navigate operation complete")
+                            self.driver_instruction = None
+                            self.driver_message = None
+                            logger.debug("wrapping up navigate")
                     # logger.warning("operator bypass")
                 else:
                     logger.error("driver is None")
@@ -1090,6 +1098,7 @@ User wants to interact with a webpage. The types of supported actions are:
   "action": "click",
   "element_text": "Code",
   "remark": "The user wants to click on the Code button.",
+  "outcome": "The Code button should be clicked.",
   "response": "The Code button has been clicked. Please check the website for any changes.",
   "need_to_review": "yes"
 }
@@ -1106,23 +1115,13 @@ User wants to interact with a webpage. The types of supported actions are:
 
 ✅ **Response (Two Steps)**:
 
-**Step 1: Click on Input Field**
-```json
-{
-  "action": "click",
-  "element_text": "Search",
-  "remark": "The user wants to search, but we first need to click on the input field.",
-  "response": "The search input should have been clicked. Please check the website for any changes.",
-  "need_to_review": "yes"
-}
-```
-
-**Step 2: Type and Press Enter**
+**Step 1: Type and Press Enter**
 ```json
 {
   "action": "fill_search_enter",
   "element_text": "Search",
   "value_to_enter": "best programming language",
+  "outcome": "The search input should be filled with 'best programming language' and Enter pressed.",
   "remark": "The user wants to type and search.",
   "response": "The field should have been filled. Please check the website for any changes.",
   "need_to_review": "yes"
@@ -1147,65 +1146,25 @@ User wants to interact with a webpage. The types of supported actions are:
   "response": "The hover action has been performed. Please check for any additional content.",
   "need_to_review": "yes"
 }
-```
 
----
+#### 🖱️ **Navigate**
 
-## 🔁 Action Review Protocol
+**Intent**: User wants to go to another prefered link , which is either given by user, or you need to think of.
 
-If `need_to_review` is `"yes"`, follow this review cycle:
+🧾 **Example Prompt**:  
+"Can you navigate to x.com?"
 
----
-
-### Step 1: Trigger Review
+✅ **Response**:
 ```json
 {
-  "review": "to_review"
+  "action": "navigate",
+  "go_to": "https://www.x.com",
+  "element_text": "not required",
+  "remark": "The user wants to go on x.com.",
+  "response": "The website should be x.com now .pleae check.",
+  "need_to_review": "yes"
 }
-```
 
----
-
-### Step 2: System Responds with Page Content
-```json
-{
-  "review": "review_going_on",
-  "content": "raw_text_on_page"
-}
-```
-
----
-
-### Step 3: Analyze and Conclude:
-
-✅ If Action Was Successful:
-```json
-{
-  "review": "success"
-}
-```
-
-❌ If Action Failed (retry if needed):
-```json
-{
-  "review": "failure",
-  "reason": "The element 'Code' was not found on the updated page.",
-  "retry_action": {
-    "action": "click",
-    "element_text": "Code",
-    "remark": "Retrying click on Code.",
-    "response": "Trying again to click on the Code button.",
-    "need_to_review": "yes"
-  }
-}
-```
-
-🏁 Final Step (when you're done):
-```json
-{
-  "review": "completed",
-  "response": "The action has been completed successfully."
-}
 ```
 
 ---
@@ -1232,7 +1191,65 @@ Use this flow to accurately help low-vision users interact with the web.
         )
         
         return response.text
-            
+
+    def review_page_and_outcome(self, page_source, outcome):
+        """Review the page source and outcome of the action to determine success or failure."""
+
+        prompt = """
+        You are a judge of a website.
+        Your job is to decide whether the intended action was successful or not based on:
+        
+        - `outcome`: the expected result of the action (already performed)
+        - `page_source`: the visible text after the action was taken.
+
+        You must return one of the following:
+
+        ✅ If the expected outcome **is achieved**:
+        {{
+            "review": "success"
+        }}
+
+        ❌ If the outcome **is not** achieved:
+        {{
+            "review": "failure"
+        }}
+
+        ### Example:
+        outcome: should go on sign up page  
+        page source: already have an account? login username password etc...
+        → Outcome was achieved because the page shows login/signup text.
+
+        Now decide:
+
+        outcome: {outcome}  
+        page source: {page_source}
+        """.format(page_source=page_source, outcome=outcome)
+
+        contents = [
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(text=prompt),
+                ],
+            )
+        ]
+
+        generate_content_config = types.GenerateContentConfig(
+            temperature=0.5,
+            top_p=0.95,
+            top_k=40,
+            max_output_tokens=1024,
+            response_mime_type="application/json",
+        )
+
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=generate_content_config,
+        )
+
+        return response.text
+
     async def trigger_bridge(self, type, message):
         """Handles different gemini requests and sends responses via WebSocket."""
         if type == "LLM_ask_a_text":
@@ -1247,7 +1264,10 @@ Use this flow to accurately help low-vision users interact with the web.
                 these are the details on website: 
                 by vision: {str(vision_summery)}. 
                 I will ask questions now.
-                my question is {org_q} 
+                my question is {org_q} .
+                if there exist multiple text that confuse you , see the text around , and return what makes sense .
+                for example , on kaggle , "code word might appear at the top of the competition page and in sidebar " .
+                so you need to guess and put cordinates accordingly .
                 """
                 new_answer = self.generate(new_question)
                 logger.warning(new_answer)
@@ -1276,6 +1296,8 @@ Use this flow to accurately help low-vision users interact with the web.
                         SM.driver_message = "click_on_driver"
                         SM.driver_instruction =  infodict
                         logger.warning(f"Center coordinates click : {center}")
+                        await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                        
                     if action_required == "fill_search_enter":
                         logger.warning(f"input triggered by ai")
                         new_list = []
@@ -1288,16 +1310,40 @@ Use this flow to accurately help low-vision users interact with the web.
                             'x':int(center_x),
                             'y':int(center_y),
                         }
-                        new_generated_text = new_answer_dict["new_generated_text"].replace('\n','')
+                        new_generated_text = new_answer_dict["value_to_enter"].replace('\n','')
                         new_keypress_dict = {
                             'key':new_generated_text
                         }
                         SM.driver_message = "click_on_driver"
                         SM.driver_instruction =  infodict
-                        time.sleep(2)
+                        time.sleep(1)
                         SM.driver_message = "keypress"
                         SM.driver_instruction = new_keypress_dict
                         await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                        
+                    if action_required == "navigate":
+                        logger.warning(f"navigation triggered by ai")
+                        new_generated_link = new_answer_dict["go_to"].replace('\n','')
+                        infodict = {
+                            'go_to':new_generated_link
+                        }
+                        SM.driver_message = "navigate"
+                        SM.driver_instruction =  infodict
+                        time.sleep(1)
+                        await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                    logger.debug("starting review process")
+                    page_source = SM.driver.page_source
+                    outcome = new_answer_dict.get("outcome")
+                    new_review = self.review_page_and_outcome(
+                        page_source=page_source,
+                        outcome=outcome
+                    )
+                    new_review_dict = json.loads(new_review)
+                    review = new_review_dict.get("review")
+                    if review == "success":
+                        logger.warning("review success")
+                    if review == "failure":
+                        logger.warning("review failure")
                 else:
                     logger.warning("no action required")
                     await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
