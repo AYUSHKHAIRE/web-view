@@ -321,7 +321,7 @@
         let monitor_button = document.getElementById(id + "-button");
         old_text = monitor_button.textContent;
         monitor_button.style.backgroundColor = "rgb(52, 152, 219)"
-        monitor_button.textContent = "close " + old_text;
+        monitor_button.textContent = "❌ " + old_text;
         monitor_button.style.color = "white";
       } else {
         // Otherwise, hide the chat
@@ -329,7 +329,7 @@
         let monitor_button = document.getElementById(id + "-button");
         old_text = monitor_button.textContent;
         monitor_button.style.backgroundColor = "rgb(255, 255, 255)"
-        monitor_button.textContent = old_text.replace("close ", "");
+        monitor_button.textContent = old_text.replace("❌ ", "");
         monitor_button.style.color = "#3498db";
       }
     }
