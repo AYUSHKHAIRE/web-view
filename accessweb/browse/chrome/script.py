@@ -1134,7 +1134,11 @@ always good if you can analyze correct cordinates after viewing all things on do
   "outcome": "The search input should be filled with 'best programming language' and Enter pressed.",
   "remark": "The user wants to type and search.",
   "response": "The field should have been filled. Please check the website for any changes.",
-  "need_to_review": "yes"
+  "need_to_review": "yes",
+  "coordinates": {
+      "x": 100,
+      "y": 200
+    }
 }
 ```
 
@@ -1379,15 +1383,16 @@ Use this flow to accurately help low-vision users interact with the web.
                         
                     if action_required == "fill_search_enter":
                         logger.warning(f"input triggered by ai")
-                        new_list = []
-                        for a_list in cord_group:
-                            new_list = new_list + a_list
-                        center_x = sum(point['x'] for point in new_list) / len(new_list)
-                        center_y = sum(point['y'] for point in new_list) / len(new_list)
-                        center = (center_x, center_y)
+                        # new_list = []
+                        # for a_list in cord_group:
+                        #     new_list = new_list + a_list
+                        # center_x = sum(point['x'] for point in new_list) / len(new_list)
+                        # center_y = sum(point['y'] for point in new_list) / len(new_list)
+                        # center = (center_x, center_y)
+                        
                         infodict = {
-                            'x':int(center_x),
-                            'y':int(center_y),
+                            'x':int(coordinate_x),
+                            'y':int(coordinate_y),
                         }
                         new_generated_text = new_answer_dict["value_to_enter"].replace('\n','')
                         new_keypress_dict = {
