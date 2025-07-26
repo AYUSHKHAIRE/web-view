@@ -576,17 +576,21 @@ class selenium_manager:
                         'height': rect_cords['height']
                     }
                 })
-                self.page_view_data = data
-                summarized_page_view_data = {}
-                for d in data:
-                    if d['tag'] in summarized_page_view_data.keys():
-                        summarized_page_view_data[d].append(
-                                d['text']
-                        )
-                    else:
-                        summarized_page_view_data[d['tag']] = [d['tag']]
+
+        self.page_view_data = data
+
+        summarized_page_view_data = {}
+        for d in data:
+            tag = d['tag']
+            text = d['text']
+            if tag in summarized_page_view_data:
+                summarized_page_view_data[tag].append(text)
+            else:
+                summarized_page_view_data[tag] = [text]
+
         logger.info(f"Processed {len(data)} elements in viewport")
-        return driver , summarized_page_view_data
+        return driver, summarized_page_view_data
+
 
     """
     click on the driver
@@ -1100,8 +1104,14 @@ User wants to interact with a webpage. The types of supported actions are:
   "remark": "The user wants to click on the Code button.",
   "outcome": "The Code button should be clicked.",
   "response": "The Code button has been clicked. Please check the website for any changes.",
-  "need_to_review": "yes"
+  "need_to_review": "yes",
+  "coordinates": {
+    "x": 100,
+    "y": 200
+   }
 }
+
+always good if you can analyze correct cordinates after viewing all things on dom !
 ```
 
 ---
@@ -1165,17 +1175,41 @@ User wants to interact with a webpage. The types of supported actions are:
   "need_to_review": "yes"
 }
 
-```
+for doing whatever you asked , you have a large data now .
+even if there is a conflict - mean same text occur multiple times ,
+you can choose wisely from the data , 
+exactly where to perform the action .
 
+```
+###  3 : agent mode
+IF QUESTION START WITH (>) , assmue you are in agent mode.
+you got a question about a webpage ,
+that neither a simple question , like what is an apple ,
+or not a simple action like click on submit button 
+you realize you need to do multiple steps   
+for example , > give me information regarding india history ,
+or > give me best and cheap book link from amazon,
+here , you need to make an end to end plan .
+you need to make a plan , and my system will execute it step by step .
+you should return like this:
+```json
+{
+  "action": "agent_mode",
+  "element_text": "not required",
+  "question": "give me information regarding india history",
+}
+
+dont use \ .
+
+```
 ---
 
 ## ✅ Additional Rules
 
-1. Never use `\n` — keep output compact.
+1. Never use `\n`  or `\` — keep output compact.
 2. If the prompt is unclear, **ask the user to clarify**.
 3. Always determine the **necessary steps** for the action.
 4. Your job is to ensure the element interaction is successful — if not, retry or report failure.
-
 ---
 
 Use this flow to accurately help low-vision users interact with the web.
@@ -1250,19 +1284,64 @@ Use this flow to accurately help low-vision users interact with the web.
 
         return response.text
 
+    def decide_steps_as_an_agent(self, question):
+        """Decide the steps to take as an agent based on the user's question."""
+        contents = [
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(
+                        text="""
+    You are a **Web Search Journey Planner**.  
+    Your task is to break down a question into a structured sequence of web-based information retrieval steps.  
+
+    For example, if the question is:
+
+    > "Give me a brief about Indian history"
+
+    Then the steps should be returned like this:
+
+
+    Now, here is your question:  
+    {question}
+
+    Return the steps in the same JSON format.
+    """.format(question=question)
+                    ),
+                ],
+            )
+        ]
+
+        generate_content_config = types.GenerateContentConfig(
+            temperature=0.5,
+            top_p=0.95,
+            top_k=40,
+            max_output_tokens=1024,
+            response_mime_type="application/json",
+        )
+
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=generate_content_config,
+        )
+        logger.warning(f"Decided steps: {response.text}")
+        return response.text
+
     async def trigger_bridge(self, type, message):
         """Handles different gemini requests and sends responses via WebSocket."""
         if type == "LLM_ask_a_text":
             try:
                 logger.debug("Trying to set up LLM response on gemini api")
-                # SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
+                SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
                 label_resp , text_resp , vision_summery= VA.get_info_for_img()
-                logger.warning(f"{vision_summery} ||| ")
+                logger.warning(f"{vision_summery} ||| {text_resp}")
                 org_q = message['message']
                 logger.warning(org_q)
                 new_question = f"""
                 these are the details on website: 
-                by vision: {str(vision_summery)}. 
+                by vision: {str(source_info)}. 
+                by text: {str(text_resp)}.
                 I will ask questions now.
                 my question is {org_q} .
                 if there exist multiple text that confuse you , see the text around , and return what makes sense .
@@ -1275,27 +1354,27 @@ Use this flow to accurately help low-vision users interact with the web.
                 if "action" and "element_text" in new_answer_dict.keys():
                     action_required = new_answer_dict["action"].lower().replace('\n','')
                     element_text = new_answer_dict["element_text"].replace('\n','')
-                    cord_group = []
-                    for key in text_resp.keys():
-                        if key in  element_text:
-                            cord_group.append(text_resp[key])
-                    cord_group = cord_group[:1]
-                    logger.warning(f'{cord_group} | {action_required} | {element_text}')
+                    coordinate_x = new_answer_dict["coordinates"]["x"]
+                    coordinate_y = new_answer_dict["coordinates"]["y"]
+                    # cord_group = []
+                    # for key in text_resp.keys():
+                    #     if key in  element_text:
+                    #         cord_group.append(text_resp[key])
+                    # cord_group = cord_group[:1]
+                    logger.warning(f'{coordinate_x} | {coordinate_y} | {action_required} | {element_text}')
                     if action_required == "click":
                         logger.warning(f"click triggered by ai")
-                        new_list = []
-                        for a_list in cord_group:
-                            new_list = new_list + a_list
-                        center_x = sum(point['x'] for point in new_list) / len(new_list)
-                        center_y = sum(point['y'] for point in new_list) / len(new_list)
-                        center = (center_x, center_y)
+                        # new_list = []
+                        # for a_list in cord_group:
+                        #     new_list = new_list + a_list
+                        # center_x = sum(point['x'] for point in new_list) / len(new_list)
+                        # center_y = sum(point['y'] for point in new_list) / len(new_list)
                         infodict = {
-                            'x':int(center_x),
-                            'y':int(center_y),
+                            'x':int(coordinate_x),
+                            'y':int(coordinate_y),
                         }
                         SM.driver_message = "click_on_driver"
                         SM.driver_instruction =  infodict
-                        logger.warning(f"Center coordinates click : {center}")
                         await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
                         
                     if action_required == "fill_search_enter":
@@ -1331,6 +1410,15 @@ Use this flow to accurately help low-vision users interact with the web.
                         SM.driver_instruction =  infodict
                         time.sleep(1)
                         await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                    
+                    if action_required == "agent_mode":
+                        logger.warning(f"agent mode triggered by ai")
+                        question = new_answer_dict["question"].replace('\n','')
+                        steps = self.decide_steps_as_an_agent(question)
+                        logger.error(f"steps decided by ai {steps}")
+                        steps_dict = json.loads(steps)
+                        logger.warning(f"steps decided by ai : {steps_dict}")
+                    
                     logger.debug("starting review process")
                     page_source = SM.driver.page_source
                     outcome = new_answer_dict.get("outcome")
@@ -1351,7 +1439,6 @@ Use this flow to accurately help low-vision users interact with the web.
             except Exception as e:
                 logger.error(f"Error in setting up LLM response: {e}")
     
-
 class visionApiLocal:
     def __init__(self):
         self.extract_engine = pytesseract
