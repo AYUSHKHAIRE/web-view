@@ -12,6 +12,7 @@ from accessweb.settings import BASE_DIR
 import os
 import base64
 import numpy as np
+import subprocess
 
 '''
 I follow the international standard .
@@ -21,6 +22,76 @@ refer this article : https://www.pharmabraille.com/pharmaceutical-braille/the-br
 BB = BrailBelt()
 
 TASK_POOL = {}
+async def run_agent_subprocess(self, user_id, question):
+    script_path = os.path.join(BASE_DIR, "browse", "agent_executor.py")
+    process = await asyncio.create_subprocess_exec(
+        "python3", script_path, user_id, question, BASE_DIR,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+
+    in_block = False
+    block_lines = []
+
+    while True:
+        line = await process.stdout.readline()
+        if not line:
+            break  # End of output
+
+        decoded_line = line.decode().strip()
+        print(f"[AGENT LOG] {decoded_line}")
+
+        # Start/End of structured result block
+        if decoded_line.strip().startswith("="):
+            if not in_block:
+                in_block = True
+                block_lines = [decoded_line]
+            else:
+                block_lines.append(decoded_line)
+                # Block ends — send as one message
+                block_message = "\n".join(block_lines)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "send_to_group",
+                        "message": {
+                            "type": "agent_final_result",
+                            "message": block_message.replace("=","")
+                        },
+                    }
+                )
+                in_block = False
+                block_lines = []
+        elif in_block:
+            block_lines.append(decoded_line)
+        else:
+            # Regular line
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "send_to_group",
+                    "message": {
+                        "type": "agent_log",
+                        "message": decoded_line
+                    },
+                }
+            )
+
+    # Optional: handle stderr
+    async for err_line in process.stderr:
+        decoded_err = err_line.decode().strip()
+        print(f"[AGENT ERROR] {decoded_err}")
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "send_to_group",
+                "message": {
+                    "type": "agent_error",
+                    "message": decoded_err
+                },
+            }
+        )
+
 
 class WebSocketConsumer(
     AsyncWebsocketConsumer
@@ -114,11 +185,21 @@ class WebSocketConsumer(
                     logger.debug(f"Saying page source to user {user_id}")
                 elif message_type == "LLM_ask_a_text":
                     logger.warning(data)
-                    response = {
-                        "type": "LLM_ask_a_text",
-                        "message":data["message"]
-                    }
-                    logger.debug(f"Saying send message to LLM by user {user_id}")
+                    if data["message"].startswith(">>>"):
+                        logger.debug(f"Agent mode on by user {user_id}")
+                        asyncio.create_task(
+                            run_agent_subprocess(self, user_id, data["message"])
+                        )
+                        response = {
+                            "type": "agent_started",
+                            "message":data["message"]
+                        }
+                    else:
+                        response = {
+                            "type": "LLM_ask_a_text",
+                            "message":data["message"]
+                        }
+                        logger.debug(f"Saying send message to LLM by user {user_id}")
                 elif message_type == "LLM_response":
                     response = {
                         "type": "LLM_response",
