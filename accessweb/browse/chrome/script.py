@@ -1116,15 +1116,51 @@ Response:
 
 ---
 
-Fill Search and Press Enter
+web search
 
-Note: If you can fire a URL as well —  
+Note: If you can fire a URL as well —  GIVE PRIORITY TO URL .
+for example , if you need web search , instad of going to google , you can do
+Important: If your step involves searching the web (like finding information or answers), never simulate typing in a search box. Instead, directly generate a search URL using the template below and return it in a "navigate" action.
+
+Search URL Template:
+https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q={URL_ENCODED_QUERY}&gsc.sort=
+
+Example for query "indian history":
+{
+  "action": "navigate",
+  "go_to": "https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q=indian%20history&gsc.sort=",
+  "element_text": "not required",
+  "remark": "The user asked for information. Navigate to the custom search engine with their query.",
+  "response": "Navigating to the search page with relevant results.",
+  "need_to_review": "yes",
+  "coordinates": {}
+}
 for example, if there is like "search for best programming language",  
 you can fire a URL like  
 https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q=best%20programming%20language&gsc.sort=  
 Then return for navigation to the URL, instead of going to google.com.
 
 Intent: User wants to search or input text into a field.
+
+
+---
+
+get page sources
+Example Prompt:  
+"analyze the content on webpage"
+or Analyze search results page, focusing on websites of development companies, freelance platforms
+
+you can give response like
+{
+  "action": "page_source",
+  "element_text": "not required",
+  "coordinates": {}
+}
+
+---
+
+
+Fill Search and Press Enter
 
 Example Prompt:  
 "> Can you search for 'best programming language'?"
@@ -1470,6 +1506,13 @@ Use this flow to accurately help low-vision users interact with the web.
                         SM.driver_instruction =  infodict
                         time.sleep(1)
                         await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
+                    
+                    if action_required == "page_source":
+                        logger.warning(f"getting page sources")
+                        SM.driver , source_info = SM.get_elements_in_viewport(SM.driver)
+                        label_resp , text_resp , vision_summery= VA.get_info_for_img()
+                        time.sleep(1)
+                        await WS_CLIENT.send_message(type="page_source_response", message=f'{source_info} ||| {text_resp}')
                     
                     if action_required == "agent_mode":
                         logger.warning(f"agent mode triggered by ai")
