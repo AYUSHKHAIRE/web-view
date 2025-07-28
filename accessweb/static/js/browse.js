@@ -209,7 +209,16 @@ function estabilish_socket(user_id) {
         } else if (data.type === "LLM_response") {
           console.log(data);
           display_LLM_response(data);
-        } else if (data.type === "vision_response") {
+        }
+        else if (data.type === "agent_final_result") {
+          console.log(data);
+          display_agent_result(data);
+        }
+        else if (data.type === "agent_log") {
+          console.log(data);
+          display_ageent_response(data);
+        }
+        else if (data.type === "vision_response") {
           console.log(data);
           highlightTextOnImage(
             data.message,
@@ -372,6 +381,42 @@ function speakText(text) {
   console.log("Speaking:", text);
 }
 
+function display_agent_result(data) {
+  let llmcon = document.getElementById("LLM-conversation");
+  let newmessage;
+  try {
+    newmessage = data.message
+  } catch (error) {
+    console.error("Failed to parse message:", error, "Original:", data.message);
+    return;
+  }
+
+  // Create a reply container
+  let reply_container = document.createElement("div");
+  reply_container.classList.add("incoming-chat", "chat");
+
+  // Convert Markdown to HTML (assuming `marked` is available)
+  let rawHTML = marked.parse(newmessage);
+  reply_container.innerHTML = rawHTML + "<br>";
+
+  // Create a speaker icon button
+  let speakerButton = document.createElement("button");
+  speakerButton.classList.add("speaker-button");
+  speakerButton.innerHTML = "📢";
+
+  // Use "click" event to trigger speech
+  speakerButton.addEventListener("click", () => {
+    speakText(newmessage);
+  });
+
+  // Append elements to chat UI
+  reply_container.appendChild(speakerButton);
+  llmcon.appendChild(reply_container);
+  llmcon.scrollTop = llmcon.scrollHeight;
+
+  console.log("All LLM responses displayed with Markdown.");
+}
+
 function display_LLM_response(data) {
   let llmcon = document.getElementById("LLM-conversation");
   let newmessage;
@@ -411,6 +456,29 @@ function display_LLM_response(data) {
   console.log("All LLM responses displayed with Markdown.");
 }
 
+
+function display_ageent_response(data) {
+  let agent_log_con = document.getElementById("agent-log");
+  let newmessage;
+  try {
+    // First, parse `data.message`, since it's a stringified JSON
+    let parsedMessage = data.message;
+    // Extract the actual response text
+    newmessage = parsedMessage;
+  } catch (error) {
+    console.error("Failed to parse message:", error, "Original:", data.message);
+    return;
+  }
+
+  // Create a reply container
+  let reply_container = document.createElement("div");
+  // Convert Markdown to HTML (assuming `marked` is available)
+  reply_container.innerHTML = newmessage + "<br>";
+  agent_log_con.appendChild(reply_container);
+  agent_log_con.scrollTop = agent_log_con.scrollHeight;
+
+  console.log("All agent_log_con responses displayed with Markdown.");
+}
 
 function highlightTextOnImage(textData, imageid, overlayimagehighlightid) {
   console.log("Received textData (raw):", textData);

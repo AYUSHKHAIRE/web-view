@@ -615,6 +615,16 @@ input[type="checkbox"]:checked::before {
   font-size: 0.9rem;
 }
 
+.agent-log{
+  width: 100%;
+  color: rgb(80, 159, 0);
+  background-color: #002b58;
+  overflow-y: scroll;
+  min-height: 300px;
+  height: 300px;
+  text-align:start;
+}
+
 #ai-chat {
   height: 40px;
   padding: 0 14px;
