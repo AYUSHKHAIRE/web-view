@@ -7,6 +7,7 @@ import asyncio
 from threading import Thread, RLock
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
+import textwrap
 
 # Selenium & Undetected ChromeDriver
 import undetected_chromedriver as uc
@@ -1064,40 +1065,40 @@ The details provided to you will be the **visible text content** from the websit
 
 ---
 
-## 🧠 Your Task:
+Your powers :
+search engine https://duckduckgo.com/
+
+Task:
 
 Analyze the user’s prompt and classify it as one of the following:
 
-### 1. **General Query**
+1. General Query
+(This is something simple, not ">" included in the start)  
 A general question not related to performing an action on the webpage, such as:
 - “What is the capital of France?”
 - “Can you solve this math problem?”
 - “Write a Python function to reverse a string.”
 
-✅ **Expected Output Format**:
-```json
+Expected Output Format:
 {
   "response": "your answer"
 }
-```
 
 ---
 
-### 2. **Action Request**
+(Here, action or agent mode is IF AND ONLY IF there is ">" in the start)
 
+2. Action Request  
 User wants to interact with a webpage. The types of supported actions are:
 
----
+Click
 
-#### 📌 **Click**
+Intent: User wants to click a visible element.
 
-**Intent**: User wants to click a visible element.
+Example Prompt:  
+"> Hey, can you click on Code?"
 
-🧾 **Example Prompt**:  
-"Hey, can you click on **Code**?"
-
-✅ **Response**:
-```json
+Response:
 {
   "action": "click",
   "element_text": "Code",
@@ -1108,25 +1109,29 @@ User wants to interact with a webpage. The types of supported actions are:
   "coordinates": {
     "x": 100,
     "y": 200
-   }
+  }
 }
 
-always good if you can analyze correct cordinates after viewing all things on dom !
-```
+(Always good if you can analyze correct coordinates after viewing all things on DOM.)
 
 ---
 
-#### 🔎 **Fill Search and Press Enter**
+Fill Search and Press Enter
 
-**Intent**: User wants to search or input text into a field.
+Note: If you can fire a URL as well —  
+for example, if there is like "search for best programming language",  
+you can fire a URL like  
+https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q=best%20programming%20language&gsc.sort=  
+Then return for navigation to the URL, instead of going to google.com.
 
-🧾 **Example Prompt**:  
-"Can you search for 'best programming language'?"
+Intent: User wants to search or input text into a field.
 
-✅ **Response (Two Steps)**:
+Example Prompt:  
+"> Can you search for 'best programming language'?"
 
-**Step 1: Type and Press Enter**
-```json
+Response (Two Steps):
+
+Step 1: Type and Press Enter
 {
   "action": "fill_search_enter",
   "element_text": "Search",
@@ -1136,23 +1141,21 @@ always good if you can analyze correct cordinates after viewing all things on do
   "response": "The field should have been filled. Please check the website for any changes.",
   "need_to_review": "yes",
   "coordinates": {
-      "x": 100,
-      "y": 200
-    }
+    "x": 100,
+    "y": 200
+  }
 }
-```
 
 ---
 
-#### 🖱️ **Hover**
+Hover
 
-**Intent**: User wants to hover over an element for additional info.
+Intent: User wants to hover over an element for additional info.
 
-🧾 **Example Prompt**:  
-"Can you highlight over the 'About Us' section?"
+Example Prompt:  
+"> Can you highlight over the 'About Us' section?"
 
-✅ **Response**:
-```json
+Response:
 {
   "action": "hover",
   "element_text": "About Us",
@@ -1161,62 +1164,73 @@ always good if you can analyze correct cordinates after viewing all things on do
   "need_to_review": "yes"
 }
 
-#### 🖱️ **Navigate**
+---
 
-**Intent**: User wants to go to another prefered link , which is either given by user, or you need to think of.
+Navigate
 
-🧾 **Example Prompt**:  
-"Can you navigate to x.com?"
+Intent: User wants to go to another preferred link, which is either given by user, or you need to think of.
 
-✅ **Response**:
-```json
+Example Prompt:  
+"> Can you navigate to x.com?"
+
+Important: If your step involves searching the web (like finding information or answers), never simulate typing in a search box. Instead, directly generate a search URL using the template below and return it in a "navigate" action.
+
+Search URL Template:
+https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q={URL_ENCODED_QUERY}&gsc.sort=
+
+Example for query "indian history":
 {
   "action": "navigate",
-  "go_to": "https://www.x.com",
+  "go_to": "https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q=indian%20history&gsc.sort=",
   "element_text": "not required",
-  "remark": "The user wants to go on x.com.",
-  "response": "The website should be x.com now .pleae check.",
-  "need_to_review": "yes"
+  "remark": "The user asked for information. Navigate to the custom search engine with their query.",
+  "response": "Navigating to the search page with relevant results.",
+  "need_to_review": "yes",
+  "coordinates": {}
 }
 
-for doing whatever you asked , you have a large data now .
-even if there is a conflict - mean same text occur multiple times ,
-you can choose wisely from the data , 
-exactly where to perform the action .
+---
 
-```
-###  3 : agent mode
-IF QUESTION START WITH (>) , assmue you are in agent mode.
-you got a question about a webpage ,
-that neither a simple question , like what is an apple ,
-or not a simple action like click on submit button 
-you realize you need to do multiple steps   
-for example , > give me information regarding india history ,
-or > give me best and cheap book link from amazon,
-here , you need to make an end to end plan .
-you need to make a plan , and my system will execute it step by step .
-you should return like this:
-```json
+3. Agent Mode
+
+If question starts with ">>>" (triple greater-than signs), assume you are in agent mode.  
+You got a question about a webpage that is neither a simple question nor a simple action like clicking a button.  
+You realize you need to do multiple steps.
+
+For example:
+">>> give me information regarding india history"  
+">>> give me best and cheap book link from amazon"
+
+Here, you need to make an end-to-end plan.  
+You need to return:
+
 {
   "action": "agent_mode",
   "element_text": "not required",
-  "question": "give me information regarding india history",
+  "coordinates": {},
+  "question": "give me information regarding india history"
 }
 
-dont use \ .
+If the plan includes any sort of search, the first step should be a "navigate" to the custom search URL:
+https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q={query}&gsc.sort=
 
-```
+Always generate this link instead of simulating typing and pressing enter.
+
 ---
 
-## ✅ Additional Rules
+Additional Rules
 
-1. Never use `\n`  or `\` — keep output compact.
-2. If the prompt is unclear, **ask the user to clarify**.
-3. Always determine the **necessary steps** for the action.
-4. Your job is to ensure the element interaction is successful — if not, retry or report failure.
+1. Never use \n or \ — keep output compact.  
+2. If the prompt is unclear, ask the user to clarify.  
+3. Always determine the necessary steps for the action.  
+4. Your job is to ensure the element interaction is successful — if not, retry or report failure.  
+5. If it is a Google search you need, your link should always follow this pattern:  
+   https://cse.google.com/cse?cx=e5856f31c6fb143cb#gsc.tab=0&gsc.q={TERM_TO_SEARCH}&gsc.sort=
+
 ---
 
 Use this flow to accurately help low-vision users interact with the web.
+
 """  
                 ),
             ],
@@ -1290,29 +1304,37 @@ Use this flow to accurately help low-vision users interact with the web.
 
     def decide_steps_as_an_agent(self, question):
         """Decide the steps to take as an agent based on the user's question."""
+        logger.debug("starting generating steps ...")
+
+        prompt = textwrap.dedent(f"""
+            You are a **Web Search Journey Planner**.  
+            Your task is to break down a question into a structured sequence of web-based information retrieval steps.  
+
+            For example, if the question is:
+
+            > "Give me a brief about Indian history"
+
+            Then the steps should be returned like this:
+            {{
+                "steps" : [
+                    "1 . navigate to google search",
+                    "2 . search for indian history",
+                    "3 . get page source and important links",
+                    "4 . navigate to some particular links",
+                    "5 . read and return response"
+                ]
+            }}
+
+            Now, here is your question:  
+            {question}
+
+            Return the steps in the same JSON format.
+        """)
+
         contents = [
             types.Content(
                 role="user",
-                parts=[
-                    types.Part.from_text(
-                        text="""
-    You are a **Web Search Journey Planner**.  
-    Your task is to break down a question into a structured sequence of web-based information retrieval steps.  
-
-    For example, if the question is:
-
-    > "Give me a brief about Indian history"
-
-    Then the steps should be returned like this:
-
-
-    Now, here is your question:  
-    {question}
-
-    Return the steps in the same JSON format.
-    """.format(question=question)
-                    ),
-                ],
+                parts=[types.Part.from_text(text=prompt)],
             )
         ]
 
@@ -1324,16 +1346,49 @@ Use this flow to accurately help low-vision users interact with the web.
             response_mime_type="application/json",
         )
 
-        response = self.client.models.generate_content(
-            model=self.model,
-            contents=contents,
-            config=generate_content_config,
-        )
-        logger.warning(f"Decided steps: {response.text}")
-        return response.text
+        try:
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=contents,
+                config=generate_content_config,
+            )
+            logger.warning(f"Decided steps: {response.text}")
+            return response.text
+        except Exception as e:
+            logger.error(f"Error in setting up LLM response: {e}")
+            return None
+    
+    async def execute_steps_as_an_agent(self,steps):
+        logger.warning(f"started executing the steps successfully {steps}")
+        for st in steps:
+            try:
+                type_ = "LLM_ask_a_text"
+                message = st
+                time.sleep(5)
+                logger.debug(f"Executing step : {st}")
+                await self.trigger_bridge(
+                    type=type_,
+                    message={
+                        "message":message
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error Executing step :{e}")
 
     async def trigger_bridge(self, type, message):
         """Handles different gemini requests and sends responses via WebSocket."""
+        def apply_for_review(page_source, outcome):
+            new_review = self.review_page_and_outcome(
+                page_source=page_source,
+                outcome=outcome
+            )
+            new_review_dict = json.loads(new_review)
+            review = new_review_dict.get("review")
+            if review == "success":
+                logger.warning("review success")
+            if review == "failure":
+                logger.warning("review failure")
+        
         if type == "LLM_ask_a_text":
             try:
                 logger.debug("Trying to set up LLM response on gemini api")
@@ -1358,8 +1413,8 @@ Use this flow to accurately help low-vision users interact with the web.
                 if "action" and "element_text" in new_answer_dict.keys():
                     action_required = new_answer_dict["action"].lower().replace('\n','')
                     element_text = new_answer_dict["element_text"].replace('\n','')
-                    coordinate_x = new_answer_dict["coordinates"]["x"]
-                    coordinate_y = new_answer_dict["coordinates"]["y"]
+                    coordinate_x = new_answer_dict.get("coordinates", {}).get("x")
+                    coordinate_y = new_answer_dict.get("coordinates", {}).get("y")
                     # cord_group = []
                     # for key in text_resp.keys():
                     #     if key in  element_text:
@@ -1422,21 +1477,15 @@ Use this flow to accurately help low-vision users interact with the web.
                         steps = self.decide_steps_as_an_agent(question)
                         logger.error(f"steps decided by ai {steps}")
                         steps_dict = json.loads(steps)
-                        logger.warning(f"steps decided by ai : {steps_dict}")
+                        steps_need = steps_dict["steps"]
+                        logger.warning(f"steps decided by ai : {steps_need}")
+                        await self.execute_steps_as_an_agent(steps_need)
                     
-                    logger.debug("starting review process")
-                    page_source = SM.driver.page_source
-                    outcome = new_answer_dict.get("outcome")
-                    new_review = self.review_page_and_outcome(
-                        page_source=page_source,
-                        outcome=outcome
-                    )
-                    new_review_dict = json.loads(new_review)
-                    review = new_review_dict.get("review")
-                    if review == "success":
-                        logger.warning("review success")
-                    if review == "failure":
-                        logger.warning("review failure")
+                    if not action_required == "agent_mode":
+                        logger.debug("starting review process")
+                        page_source = SM.driver.page_source
+                        outcome = new_answer_dict.get("outcome")
+                        apply_for_review(page_source=page_source,outcome=outcome)
                 else:
                     logger.warning("no action required")
                     await WS_CLIENT.send_message(type="LLM_response", message=new_answer)
