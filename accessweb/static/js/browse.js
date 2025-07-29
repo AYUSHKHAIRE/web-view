@@ -718,3 +718,38 @@ sign_video.addEventListener("mouseleave", function () {
 
 detect_pressed_key();
 fetchCookie();
+
+// handle chat modes
+const agent_mode_button = document.getElementById("agent-mode")
+const chat_mode_button = document.getElementById("chat-mode")
+
+function toggle_and_apply_chat_mode(mode) {
+  actual_mode = mode.split('-')[0]
+  chat_input = document.getElementById("ai-chat-input")
+  chat_input_val = chat_input.value
+  if (actual_mode == "agent") {
+    if (! chat_input_val.startsWith(">>>")) {
+      chat_input.value = `>>>${chat_input_val}`
+    }
+    else {
+      chat_input_val = chat_input_val.replace(">>>","")
+      chat_input.value = `${chat_input_val}`
+    }
+  }
+  if (actual_mode == "chat") {
+    if (! chat_input_val.startsWith(">")) {
+      chat_input.value = `>${chat_input_val}`
+    }
+    else {
+      chat_input_val = chat_input_val.replace(">","")
+      chat_input.value = `${chat_input_val}`
+    }
+  }
+}
+
+agent_mode_button.addEventListener("click",() => {
+  toggle_and_apply_chat_mode("agent-mode")
+})
+chat_mode_button.addEventListener("click",() => {
+  toggle_and_apply_chat_mode("chat-mode")
+})

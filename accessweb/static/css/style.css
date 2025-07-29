@@ -625,6 +625,24 @@ input[type="checkbox"]:checked::before {
   text-align:start;
 }
 
+.ai-powers{
+  display: flex;
+  align-items: flex-start;
+}
+
+.ai-button{
+  color: #3498db;
+  background-color: #000000;
+  height: 30px;
+  border-radius: 15px;
+  border: 2px solid #3498db;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 20px;
+}
+
 #ai-chat {
   height: 40px;
   padding: 0 14px;
