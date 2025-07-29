@@ -10,3 +10,4 @@ __pycache__/
 __pycache__/
 *.pyc
 accessweb/browse/agent/user_logs
+accessweb/browse/models/gemma-3n-transformers-gemma-3n-e2b-it-v1
