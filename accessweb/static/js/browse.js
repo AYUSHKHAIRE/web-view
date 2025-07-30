@@ -427,7 +427,7 @@ function display_LLM_response(data) {
     newmessage = parsedMessage.response;
   } catch (error) {
     console.error("Failed to parse message:", error, "Original:", data.message);
-    return;
+    newmessage = data.message
   }
 
   // Create a reply container
@@ -435,7 +435,12 @@ function display_LLM_response(data) {
   reply_container.classList.add("incoming-chat", "chat");
 
   // Convert Markdown to HTML (assuming `marked` is available)
-  let rawHTML = marked.parse(newmessage);
+  let rawHTML = ""
+  try {
+    rawHTML = marked.parse(newmessage);
+  } catch (error) {
+    rawHTML = newmessage;
+  }
   reply_container.innerHTML = rawHTML + "<br>";
 
   // Create a speaker icon button

@@ -13,6 +13,7 @@ import os
 import base64
 import numpy as np
 import subprocess
+from browse.gemma_local import GemmaManager
 
 '''
 I follow the international standard .
@@ -20,6 +21,9 @@ refer this article : https://www.pharmabraille.com/pharmaceutical-braille/the-br
 '''
 
 BB = BrailBelt()
+
+GM = GemmaManager()
+GM.setup()
 
 TASK_POOL = {}
 async def run_agent_subprocess(self, user_id, question):
@@ -186,20 +190,37 @@ class WebSocketConsumer(
                 elif message_type == "LLM_ask_a_text":
                     logger.warning(data)
                     if data["message"].startswith(">>>"):
-                        logger.debug(f"Agent mode on by user {user_id}")
-                        asyncio.create_task(
-                            run_agent_subprocess(self, user_id, data["message"])
-                        )
-                        response = {
-                            "type": "agent_started",
-                            "message":data["message"]
-                        }
+                        try:
+                            logger.debug(f"Agent mode on by user {user_id}")
+                            asyncio.create_task(
+                                run_agent_subprocess(self, user_id, data["message"])
+                            )
+                            response = {
+                                "type": "agent_started",
+                                "message":data["message"]
+                            }
+                        except:
+                            logger.error("failed to set up agent mode")
+                    elif data["message"].startswith("> "):
+                        try:
+                            response = {
+                                "type": "LLM_ask_a_text",
+                                "message":data["message"]
+                            }
+                            logger.debug(f"Saying send message to LLM by user {user_id}")
+                        except:
+                            logger.error("failed to set up chat mode")
                     else:
-                        response = {
-                            "type": "LLM_ask_a_text",
-                            "message":data["message"]
-                        }
-                        logger.debug(f"Saying send message to LLM by user {user_id}")
+                        try:
+                            if not data["message"].startswith(">"):
+                                result = GM.ask_query(data["message"])
+                                response = {
+                                    "type": "LLM_response",
+                                    "message":result
+                                }
+                                logger.debug("sending result from local llm .")
+                        except:
+                            logger.error("failed to set up simple mode")
                 elif message_type == "LLM_response":
                     response = {
                         "type": "LLM_response",
