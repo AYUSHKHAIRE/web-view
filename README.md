@@ -2,7 +2,7 @@
 
 **[Google - The Gemma 3n Impact Challenge](https://www.kaggle.com/competitions/google-gemma-3n-hackathon)**  
 **AI for a Better accessibility**
-
+[Read kaggle writeup here](https://www.kaggle.com/competitions/google-gemma-3n-hackathon/writeups/the-largest-impact-changing-accessibility-forever)
 ---
 
 > _"Is the web really made for me?"_  
@@ -180,7 +180,7 @@ Let’s create a world where the web works for everyone.
 
 - Email: [ayushkhaire.dev@gmail.com](mailto:ayushkhaire.dev@gmail.com)  
 - LinkedIn: [Ayush Khaire](https://www.linkedin.com/in/ayushkhaire/)  
-- Kaggle writeup: will be available soon .
+- [Kaggle writeup](https://www.kaggle.com/competitions/google-gemma-3n-hackathon/writeups/the-largest-impact-changing-accessibility-forever) .
 
 ---
 
